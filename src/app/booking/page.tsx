@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Calendar, Users, Check, Plane, CreditCard, User, ChevronRight, ChevronLeft, Info, Plus } from "lucide-react";
+import { MapPin, Calendar, Users, Check, Plane, CreditCard, User, ChevronRight, ChevronLeft, Info, Plus, X, Send } from "lucide-react";
 import Image from "next/image";
 
 const steps = [
@@ -49,6 +49,9 @@ const aircraftOptions = [
 
 export default function BookingPage() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showChatbot, setShowChatbot] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{sender: 'user' | 'agent', text: string, isAction?: boolean}[]>([]);
+  const [chatInput, setChatInput] = useState("");
   const [formData, setFormData] = useState({
     tripType: "One Way",
     from: "",
@@ -77,11 +80,38 @@ export default function BookingPage() {
   };
 
   const nextStep = () => {
-    if (currentStep < 4) setCurrentStep((prev) => prev + 1);
+    if (currentStep === 3) {
+      setShowChatbot(true);
+      const initialMessage = `Hi! I'd like to book a flight from ${formData.from || 'NYC'} to ${formData.to || 'LA'} on ${formData.departureDate || 'my selected date'}. We have ${formData.passengers} passengers.`;
+      setChatMessages([{ sender: 'user', text: initialMessage }]);
+      
+      setTimeout(() => {
+        setChatMessages(prev => [...prev, { sender: 'agent', text: "Hello! We've received your booking request. Let me calculate the final quote for you based on the requested route and aircraft. One moment please..." }]);
+        
+        setTimeout(() => {
+            setChatMessages(prev => [...prev, { sender: 'agent', text: "The total estimated cost for your trip will be $38,650, including taxes and your selected extras. Does this work for you?" }]);
+        }, 2000);
+      }, 1000);
+    } else if (currentStep < 4) {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep((prev) => prev - 1);
+  };
+
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!chatInput.trim()) return;
+    
+    setChatMessages(prev => [...prev, { sender: 'user', text: chatInput }]);
+    setChatInput("");
+    
+    // Simulate agent sending payment link
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { sender: 'agent', text: "Great! Click the button below to proceed to the secure payment and review screen.", isAction: true }]);
+    }, 1000);
   };
 
   const slideVariants = {
@@ -519,6 +549,60 @@ export default function BookingPage() {
           )}
         </div>
       </div>
+
+      {/* Chatbot Modal */}
+      {showChatbot && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-jet-950 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-jet-800 flex flex-col h-[500px]">
+            {/* Header */}
+            <div className="bg-gold p-4 flex justify-between items-center text-jet-950">
+              <div>
+                <h3 className="font-bold text-lg">Concierge Service</h3>
+                <p className="text-xs opacity-80">Typically replies in minutes</p>
+              </div>
+              <button onClick={() => setShowChatbot(false)} className="hover:bg-black/10 p-1 rounded-full transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            {/* Chat Area */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-jet-900">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] p-3 ${msg.sender === 'user' ? 'bg-jet-950 dark:bg-jet-800 text-white rounded-2xl rounded-tr-none' : 'bg-white dark:bg-jet-950 border border-jet-200 dark:border-jet-800 text-jet-950 dark:text-white rounded-2xl rounded-tl-none shadow-sm'}`}>
+                    <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
+                    {msg.isAction && (
+                      <button 
+                        onClick={() => {
+                          setShowChatbot(false);
+                          setCurrentStep(4);
+                        }}
+                        className="mt-3 w-full btn-gold py-2 px-4 rounded text-sm font-semibold flex justify-center items-center gap-2 bg-gold text-jet-950"
+                      >
+                        <CreditCard size={16} /> Pay & Review
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Input */}
+            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-jet-950 border-t border-jet-200 dark:border-jet-800 flex gap-2">
+              <input 
+                type="text" 
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type your message..." 
+                className="flex-1 bg-slate-100 dark:bg-jet-900 border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold text-jet-950 dark:text-white"
+              />
+              <button type="submit" className="bg-gold text-jet-950 p-2 rounded-full hover:bg-gold/90 transition-colors">
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
