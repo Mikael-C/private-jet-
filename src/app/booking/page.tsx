@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Calendar, Users, Check, Plane, CreditCard, User, ChevronRight, ChevronLeft, Info, Plus, X, Send } from "lucide-react";
 import Image from "next/image";
@@ -47,7 +48,7 @@ const aircraftOptions = [
   },
 ];
 
-export default function BookingPage() {
+function BookingContent() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showChatbot, setShowChatbot] = useState(false);
   const [chatMessages, setChatMessages] = useState<{sender: 'user' | 'agent', text: string, isAction?: boolean}[]>([]);
@@ -78,6 +79,21 @@ export default function BookingPage() {
   const updateForm = (key: string, value: any) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
+
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams) {
+      setFormData((prev) => ({
+        ...prev,
+        from: searchParams.get("from") || prev.from,
+        to: searchParams.get("to") || prev.to,
+        departureDate: searchParams.get("date") || prev.departureDate,
+        passengers: searchParams.get("passengers") ? parseInt(searchParams.get("passengers") as string) : prev.passengers,
+        tripType: searchParams.get("tripType") || prev.tripType,
+      }));
+    }
+  }, [searchParams]);
 
   const nextStep = () => {
     if (currentStep === 3) {
@@ -604,5 +620,15 @@ export default function BookingPage() {
         </div>
       )}
     </main>
+  );
+}
+
+import { Suspense } from "react";
+
+export default function BookingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-24 pb-16 bg-slate-50 dark:bg-jet-950 flex items-center justify-center text-gold">Loading...</div>}>
+      <BookingContent />
+    </Suspense>
   );
 }

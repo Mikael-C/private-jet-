@@ -3,9 +3,26 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin, Calendar, Users, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function SearchBar() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("One Way");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [date, setDate] = useState("");
+  const [passengers, setPassengers] = useState("1");
+
+  const handleSearch = () => {
+    const query = new URLSearchParams({
+      tripType: activeTab,
+      from,
+      to,
+      date,
+      passengers
+    }).toString();
+    router.push(`/booking?${query}`);
+  };
 
   return (
     <div className="w-full px-4 sm:px-6 z-20 relative -mt-20">
@@ -34,7 +51,7 @@ export default function SearchBar() {
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">From</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/70" size={18} />
-              <input type="text" placeholder="Departure City" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors placeholder:text-slate-500" />
+              <input value={from} onChange={(e) => setFrom(e.target.value)} type="text" placeholder="Departure City" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors placeholder:text-slate-500" />
             </div>
           </div>
           
@@ -42,7 +59,7 @@ export default function SearchBar() {
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">To</label>
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/70" size={18} />
-              <input type="text" placeholder="Arrival City" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors placeholder:text-slate-500" />
+              <input value={to} onChange={(e) => setTo(e.target.value)} type="text" placeholder="Arrival City" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors placeholder:text-slate-500" />
             </div>
           </div>
 
@@ -50,7 +67,7 @@ export default function SearchBar() {
             <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</label>
             <div className="relative">
               <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/70" size={18} />
-              <input type="date" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" />
+              <input value={date} onChange={(e) => setDate(e.target.value)} type="date" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors [&::-webkit-calendar-picker-indicator]:filter [&::-webkit-calendar-picker-indicator]:invert" />
             </div>
           </div>
 
@@ -59,9 +76,9 @@ export default function SearchBar() {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/70" size={18} />
-                <input type="number" min="1" placeholder="2" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors" />
+                <input value={passengers} onChange={(e) => setPassengers(e.target.value)} type="number" min="1" placeholder="2" className="input-luxury w-full pl-10 pr-4 py-3 bg-slate-50/50 dark:bg-jet-950/50 border border-slate-200 dark:border-white/10 rounded-lg text-jet-950 dark:text-white focus:outline-none focus:border-gold/50 transition-colors" />
               </div>
-              <button className="btn-gold bg-gold hover:bg-gold-light text-jet-950 px-6 rounded-lg flex items-center justify-center transition-colors">
+              <button onClick={handleSearch} className="btn-gold bg-gold hover:bg-gold-light text-jet-950 px-6 rounded-lg flex items-center justify-center transition-colors">
                 <ArrowRight size={20} />
               </button>
             </div>

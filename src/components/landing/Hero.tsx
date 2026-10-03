@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChevronDown } from "lucide-react";
 
@@ -87,12 +88,16 @@ export default function Hero() {
             variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
             className="flex flex-col sm:flex-row gap-3 md:gap-4"
           >
-            <button className="btn-gold bg-gold hover:bg-gold-light text-jet-950 px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold transition-transform hover:scale-105 text-sm md:text-base">
-              Book Your Flight
-            </button>
-            <button className="btn-outline-gold px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold border border-gold/50 text-gold hover:bg-gold/10 transition-colors text-sm md:text-base">
-              Explore Fleet
-            </button>
+            <Link href="/booking">
+              <button className="btn-gold bg-gold hover:bg-gold-light text-jet-950 px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold transition-transform hover:scale-105 text-sm md:text-base">
+                Book Your Flight
+              </button>
+            </Link>
+            <Link href="/fleet">
+              <button className="btn-outline-gold px-6 py-3 md:px-8 md:py-4 rounded-full font-semibold border border-gold/50 text-gold hover:bg-gold/10 transition-colors text-sm md:text-base">
+                Explore Fleet
+              </button>
+            </Link>
           </motion.div>
         </motion.div>
 
