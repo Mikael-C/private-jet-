@@ -1,634 +1,455 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Calendar, Users, Check, Plane, CreditCard, User, ChevronRight, ChevronLeft, Info, Plus, X, Send } from "lucide-react";
-import Image from "next/image";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  PlaneTakeoff,
+  PlaneLanding,
+  Calendar,
+  Clock,
+  Users,
+  Lock,
+  Headphones,
+  ArrowUpRight,
+  Minus,
+  Plus,
+  Sparkles,
+  ShieldCheck,
+} from "lucide-react";
+import { useBooking } from "@/lib/bookingContext";
 
-const steps = [
-  { id: 1, title: "Route Details", icon: MapPin },
-  { id: 2, title: "Select Aircraft", icon: Plane },
-  { id: 3, title: "Passenger Info", icon: User },
-  { id: 4, title: "Review & Pay", icon: CreditCard },
-];
+export default function BookingSearchPage() {
+  const router = useRouter();
+  const { booking, updateBooking } = useBooking();
 
-const aircraftOptions = [
-  {
-    id: "light",
-    name: "Light Jet",
-    capacity: "4-6 Passengers",
-    range: "1,500 nm",
-    price: "$3,500/hr",
-    image: "/images/jet-tarmac.jpg",
-  },
-  {
-    id: "midsize",
-    name: "Midsize Jet",
-    capacity: "7-9 Passengers",
-    range: "2,500 nm",
-    price: "$5,200/hr",
-    image: "/images/jet-luxury.jpg",
-  },
-  {
-    id: "super-mid",
-    name: "Super-Mid Jet",
-    capacity: "8-10 Passengers",
-    range: "3,500 nm",
-    price: "$7,000/hr",
-    image: "/images/jet-globe.jpg",
-  },
-  {
-    id: "heavy",
-    name: "Heavy Jet",
-    capacity: "10-16 Passengers",
-    range: "4,000+ nm",
-    price: "$10,500/hr",
-    image: "/images/jet-hangar.jpg",
-  },
-];
+  const [tripType, setTripType] = useState<"one-way" | "round-trip" | "multi-city">(
+    booking.tripType || "one-way"
+  );
+  const [from, setFrom] = useState(booking.from || "London Farnborough (FAB)");
+  const [to, setTo] = useState(booking.to || "Nice Côte d'Azur (NCE)");
+  const [departureDate, setDepartureDate] = useState(
+    booking.departureDate || "2026-10-18"
+  );
+  const [departureTime, setDepartureTime] = useState(
+    booking.departureTime || "10:00"
+  );
+  const [returnDate, setReturnDate] = useState(booking.returnDate || "2026-10-22");
+  const [passengers, setPassengers] = useState(booking.passengers || 2);
+  const [flexibleTime, setFlexibleTime] = useState(booking.flexibleTime || false);
 
-function BookingContent() {
-  const [currentStep, setCurrentStep] = useState(1);
-  const [showChatbot, setShowChatbot] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{sender: 'user' | 'agent', text: string, isAction?: boolean}[]>([]);
-  const [chatInput, setChatInput] = useState("");
-  const [formData, setFormData] = useState({
-    tripType: "One Way",
-    from: "",
-    to: "",
-    departureDate: "",
-    returnDate: "",
-    passengers: 1,
-    aircraft: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    specialRequests: "",
-    extras: {
-      catering: false,
-      transportation: false,
-      hotel: false,
-      luggage: false,
-    },
-    paymentMethod: "card",
-    termsAccepted: false,
-  });
-
-  const updateForm = (key: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [key]: value }));
+  const handlePassengersChange = (delta: number) => {
+    setPassengers((prev) => {
+      const updated = prev + delta;
+      return Math.max(1, Math.min(19, updated));
+    });
   };
 
-  const searchParams = useSearchParams();
-
-  useEffect(() => {
-    if (searchParams) {
-      setFormData((prev) => ({
-        ...prev,
-        from: searchParams.get("from") || prev.from,
-        to: searchParams.get("to") || prev.to,
-        departureDate: searchParams.get("date") || prev.departureDate,
-        passengers: searchParams.get("passengers") ? parseInt(searchParams.get("passengers") as string) : prev.passengers,
-        tripType: searchParams.get("tripType") || prev.tripType,
-      }));
-    }
-  }, [searchParams]);
-
-  const nextStep = () => {
-    if (currentStep === 3) {
-      setShowChatbot(true);
-      const initialMessage = `Hi! I'd like to book a flight from ${formData.from || 'NYC'} to ${formData.to || 'LA'} on ${formData.departureDate || 'my selected date'}. We have ${formData.passengers} passengers.`;
-      setChatMessages([{ sender: 'user', text: initialMessage }]);
-      
-      setTimeout(() => {
-        setChatMessages(prev => [...prev, { sender: 'agent', text: "Hello! We've received your booking request. Let me calculate the final quote for you based on the requested route and aircraft. One moment please..." }]);
-        
-        setTimeout(() => {
-            setChatMessages(prev => [...prev, { sender: 'agent', text: "The total estimated cost for your trip will be $38,650, including taxes and your selected extras. Does this work for you?" }]);
-        }, 2000);
-      }, 1000);
-    } else if (currentStep < 4) {
-      setCurrentStep((prev) => prev + 1);
-    }
+  const handleSelectQuickRoute = (quickFrom: string, quickTo: string) => {
+    setFrom(quickFrom);
+    setTo(quickTo);
   };
 
-  const prevStep = () => {
-    if (currentStep > 1) setCurrentStep((prev) => prev - 1);
-  };
-
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chatInput.trim()) return;
-    
-    setChatMessages(prev => [...prev, { sender: 'user', text: chatInput }]);
-    setChatInput("");
-    
-    // Simulate agent sending payment link
-    setTimeout(() => {
-      setChatMessages(prev => [...prev, { sender: 'agent', text: "Great! Click the button below to proceed to the secure payment and review screen.", isAction: true }]);
-    }, 1000);
-  };
-
-  const slideVariants = {
-    initial: { x: 50, opacity: 0 },
-    enter: { x: 0, opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
-    exit: { x: -50, opacity: 0, transition: { duration: 0.3, ease: "easeIn" } },
+    updateBooking({
+      tripType,
+      from,
+      to,
+      departureDate,
+      departureTime,
+      returnDate: tripType === "round-trip" ? returnDate : "",
+      passengers,
+      flexibleTime,
+    });
+    router.push("/booking/results");
   };
 
   return (
-    <main className="min-h-screen pt-24 pb-16 bg-slate-50 dark:bg-jet-950">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-display font-bold text-jet-950 dark:text-white mb-4">
-            Book Your <span className="text-gold-gradient">Flight</span>
-          </h1>
-          <p className="text-slate-500 dark:text-slate-400 font-body text-lg">
-            Experience unparalleled luxury and convenience.
-          </p>
+    <div className="w-full bg-white pb-20">
+      {/* Hero Banner */}
+      <section className="relative w-full min-h-[300px] md:min-h-[340px] bg-[#0F1420] text-white flex items-center overflow-hidden">
+        {/* Background Jet Image with Dark Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img
+            src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1600&fit=crop&q=80"
+            alt="SKYVANTAGE Private Jet"
+            className="w-full h-full object-cover object-center opacity-30 mix-blend-luminosity scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F1420] via-[#0F1420]/85 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0F1420] via-transparent to-transparent" />
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-12 relative">
-          <div className="absolute top-1/2 left-0 w-full h-1 bg-jet-800 -translate-y-1/2 z-0 rounded-full"></div>
-          <div
-            className="absolute top-1/2 left-0 h-1 bg-gold transition-all duration-500 ease-in-out z-0 rounded-full"
-            style={{ width: `${((currentStep - 1) / (steps.length - 1)) * 100}%` }}
-          ></div>
-          <div className="relative z-10 flex justify-between">
-            {steps.map((step) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.id;
-              const isCompleted = currentStep > step.id;
-
-              return (
-                <div key={step.id} className="flex flex-col items-center">
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
-                      isActive
-                        ? "bg-gold text-jet-950 shadow-[0_0_15px_rgba(212,175,55,0.5)]"
-                        : isCompleted
-                        ? "bg-gold/20 text-gold border border-gold"
-                        : "bg-white dark:bg-jet-900 text-slate-500 border border-jet-700"
-                    }`}
-                  >
-                    {isCompleted ? <Check size={20} /> : <Icon size={20} />}
-                  </div>
-                  <span
-                    className={`mt-3 text-sm font-medium ${
-                      isActive || isCompleted ? "text-jet-950 dark:text-white" : "text-slate-500"
-                    } hidden md:block`}
-                  >
-                    {step.title}
-                  </span>
-                </div>
-              );
-            })}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 relative z-10 w-full">
+          <div className="max-w-2xl">
+            <span className="section-label-dark">
+              Bespoke Private Charter
+            </span>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white mb-4 leading-[1.08]">
+              Your next journey, <br className="hidden sm:inline" />
+              on your terms.
+            </h1>
+            <p className="font-body text-base sm:text-lg text-[#E8D5A3] font-light max-w-xl">
+              Choose your destination. Set your schedule. Every aircraft in our fleet is fully bespoke and prepared to your exacting standard.
+            </p>
           </div>
         </div>
+      </section>
 
-        {/* Step Content */}
-        <div className="glass-card p-6 md:p-10 relative overflow-hidden min-h-[500px]">
-          <AnimatePresence mode="wait">
-            {currentStep === 1 && (
-              <motion.div
-                key="step1"
-                variants={slideVariants}
-                initial="initial"
-                animate="enter"
-                exit="exit"
-                className="space-y-8"
-              >
-                <h2 className="text-2xl font-display text-jet-950 dark:text-white mb-6">Route Details</h2>
-                
-                {/* Trip Type */}
-                <div className="flex flex-wrap gap-4">
-                  {["One Way", "Round Trip", "Multi City"].map((type) => (
-                    <button
-                      key={type}
-                      onClick={() => updateForm("tripType", type)}
-                      className={`px-6 py-2 rounded-full border transition-all ${
-                        formData.tripType === type
-                          ? "bg-gold text-jet-950 border-gold font-semibold"
-                          : "bg-transparent text-slate-600 dark:text-slate-300 border-jet-700 hover:border-gold/50"
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* From / To */}
-                  <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400 block">Departure</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={20} />
-                      <input
-                        type="text"
-                        placeholder="City or Airport Code"
-                        className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 pl-10 pr-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold transition-colors"
-                        value={formData.from}
-                        onChange={(e) => updateForm("from", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400 block">Destination</label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={20} />
-                      <input
-                        type="text"
-                        placeholder="City or Airport Code"
-                        className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 pl-10 pr-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold transition-colors"
-                        value={formData.to}
-                        onChange={(e) => updateForm("to", e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400 block">Departure Date</label>
-                    <div className="relative">
-                      <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={20} />
-                      <input
-                        type="date"
-                        className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 pl-10 pr-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold transition-colors"
-                        value={formData.departureDate}
-                        onChange={(e) => updateForm("departureDate", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  
-                  {formData.tripType === "Round Trip" && (
-                    <div className="space-y-2">
-                      <label className="text-sm text-slate-500 dark:text-slate-400 block">Return Date</label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={20} />
-                        <input
-                          type="date"
-                          className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 pl-10 pr-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold transition-colors"
-                          value={formData.returnDate}
-                          onChange={(e) => updateForm("returnDate", e.target.value)}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Passengers */}
-                  <div className="space-y-2">
-                    <label className="text-sm text-slate-500 dark:text-slate-400 block">Passengers</label>
-                    <div className="relative">
-                      <Users className="absolute left-3 top-1/2 -translate-y-1/2 text-gold/60" size={20} />
-                      <select
-                        className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 pl-10 pr-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold transition-colors appearance-none"
-                        value={formData.passengers}
-                        onChange={(e) => updateForm("passengers", parseInt(e.target.value))}
-                      >
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map((num) => (
-                          <option key={num} value={num}>
-                            {num} Passenger{num > 1 ? 's' : ''}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {currentStep === 2 && (
-              <motion.div
-                key="step2"
-                variants={slideVariants}
-                initial="initial"
-                animate="enter"
-                exit="exit"
-                className="space-y-6"
-              >
-                <h2 className="text-2xl font-display text-jet-950 dark:text-white mb-6">Select Aircraft</h2>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {aircraftOptions.map((jet) => (
-                    <div
-                      key={jet.id}
-                      onClick={() => updateForm("aircraft", jet.id)}
-                      className={`glass-card-hover cursor-pointer overflow-hidden transition-all duration-300 border ${
-                        formData.aircraft === jet.id ? "border-gold ring-1 ring-gold shadow-[0_0_15px_rgba(212,175,55,0.2)]" : "border-jet-800"
-                      }`}
-                    >
-                      <div className="relative h-48 w-full">
-                        <Image src={jet.image} alt={jet.name} fill className="object-cover" />
-                        {formData.aircraft === jet.id && (
-                          <div className="absolute top-4 right-4 bg-gold text-jet-950 p-1 rounded-full">
-                            <Check size={16} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-5">
-                        <h3 className="text-xl font-display font-semibold text-jet-950 dark:text-white mb-2">{jet.name}</h3>
-                        <div className="grid grid-cols-2 gap-y-2 text-sm text-slate-600 dark:text-slate-300">
-                          <div className="flex items-center gap-2">
-                            <Users size={16} className="text-gold/70" /> {jet.capacity}
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin size={16} className="text-gold/70" /> {jet.range}
-                          </div>
-                          <div className="col-span-2 mt-2 pt-2 border-t border-jet-800 flex justify-between items-center">
-                            <span className="text-slate-500 dark:text-slate-400">Estimated</span>
-                            <span className="text-lg text-gold font-semibold">{jet.price}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-
-            {currentStep === 3 && (
-              <motion.div
-                key="step3"
-                variants={slideVariants}
-                initial="initial"
-                animate="enter"
-                exit="exit"
-                className="space-y-8"
-              >
-                <h2 className="text-2xl font-display text-jet-950 dark:text-white mb-6">Passenger Info</h2>
-                
-                <div className="space-y-6">
-                  <h3 className="text-lg text-gold font-medium border-b border-jet-800 pb-2">Lead Passenger</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <input
-                      type="text"
-                      placeholder="First Name"
-                      className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 px-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold"
-                      value={formData.firstName}
-                      onChange={(e) => updateForm("firstName", e.target.value)}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Last Name"
-                      className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 px-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold"
-                      value={formData.lastName}
-                      onChange={(e) => updateForm("lastName", e.target.value)}
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email Address"
-                      className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 px-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold"
-                      value={formData.email}
-                      onChange={(e) => updateForm("email", e.target.value)}
-                    />
-                    <input
-                      type="tel"
-                      placeholder="Phone Number"
-                      className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 px-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold"
-                      value={formData.phone}
-                      onChange={(e) => updateForm("phone", e.target.value)}
-                    />
-                  </div>
-                  
-                  <textarea
-                    placeholder="Special Requests (Dietary, Accessibility, etc.)"
-                    rows={3}
-                    className="w-full bg-white dark:bg-jet-900 border border-jet-800 rounded-lg py-3 px-4 text-jet-950 dark:text-white focus:outline-none focus:border-gold resize-none"
-                    value={formData.specialRequests}
-                    onChange={(e) => updateForm("specialRequests", e.target.value)}
-                  ></textarea>
-
-                  <h3 className="text-lg text-gold font-medium border-b border-jet-800 pb-2 pt-4">Extras & Add-ons</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {[
-                      { id: "catering", label: "In-flight Catering" },
-                      { id: "transportation", label: "Ground Transportation" },
-                      { id: "hotel", label: "Hotel Booking" },
-                      { id: "luggage", label: "Luggage Assistance" },
-                    ].map((extra) => (
-                      <label key={extra.id} className="flex items-center space-x-3 cursor-pointer p-4 bg-white dark:bg-jet-900 rounded-lg border border-jet-800 hover:border-gold/50 transition-colors">
-                        <input
-                          type="checkbox"
-                          className="form-checkbox h-5 w-5 text-gold rounded border-jet-700 bg-slate-50 dark:bg-jet-950 focus:ring-gold focus:ring-offset-jet-900"
-                          checked={formData.extras[extra.id as keyof typeof formData.extras]}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              extras: { ...formData.extras, [extra.id]: e.target.checked },
-                            })
-                          }
-                        />
-                        <span className="text-slate-600 dark:text-slate-300">{extra.label}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
-            {currentStep === 4 && (
-              <motion.div
-                key="step4"
-                variants={slideVariants}
-                initial="initial"
-                animate="enter"
-                exit="exit"
-                className="space-y-8"
-              >
-                <h2 className="text-2xl font-display text-jet-950 dark:text-white mb-6">Review & Pay</h2>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
-                  {/* Summary */}
-                  <div className="lg:col-span-3 space-y-6">
-                    <div className="bg-white dark:bg-jet-900 p-6 rounded-xl border border-jet-800 space-y-4">
-                      <h3 className="text-lg text-gold font-semibold mb-4">Flight Summary</h3>
-                      
-                      <div className="flex flex-col sm:flex-row justify-between pb-4 border-b border-jet-800 gap-4">
-                        <div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">From</p>
-                          <p className="text-jet-950 dark:text-white font-medium">{formData.from || "Not specified"}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{formData.departureDate || "Date TBD"}</p>
-                        </div>
-                        <div className="flex items-center px-4">
-                          <Plane className="text-gold opacity-50" size={24} />
-                        </div>
-                        <div className="sm:text-right">
-                          <p className="text-sm text-slate-500 dark:text-slate-400">To</p>
-                          <p className="text-jet-950 dark:text-white font-medium">{formData.to || "Not specified"}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{formData.tripType === "Round Trip" ? formData.returnDate : "One Way"}</p>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 pt-2">
-                        <div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Aircraft</p>
-                          <p className="text-jet-950 dark:text-white capitalize">{formData.aircraft || "None selected"}</p>
-                        </div>
-                        <div>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Passengers</p>
-                          <p className="text-jet-950 dark:text-white">{formData.passengers}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="bg-white dark:bg-jet-900 p-6 rounded-xl border border-jet-800">
-                      <h3 className="text-lg text-gold font-semibold mb-4">Payment Method</h3>
-                      <div className="flex gap-4">
-                        <label className={`flex-1 border p-4 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-colors ${formData.paymentMethod === 'card' ? 'border-gold bg-gold/10' : 'border-jet-700 hover:border-gold/50'}`}>
-                          <input type="radio" name="payment" className="hidden" checked={formData.paymentMethod === 'card'} onChange={() => updateForm('paymentMethod', 'card')} />
-                          <CreditCard size={20} className={formData.paymentMethod === 'card' ? 'text-gold' : 'text-slate-500 dark:text-slate-400'} />
-                          <span className={formData.paymentMethod === 'card' ? 'text-gold font-medium' : 'text-slate-600 dark:text-slate-300'}>Credit Card</span>
-                        </label>
-                        <label className={`flex-1 border p-4 rounded-lg cursor-pointer flex items-center justify-center gap-2 transition-colors ${formData.paymentMethod === 'wire' ? 'border-gold bg-gold/10' : 'border-jet-700 hover:border-gold/50'}`}>
-                          <input type="radio" name="payment" className="hidden" checked={formData.paymentMethod === 'wire'} onChange={() => updateForm('paymentMethod', 'wire')} />
-                          <span className={formData.paymentMethod === 'wire' ? 'text-gold font-medium' : 'text-slate-600 dark:text-slate-300'}>Wire Transfer</span>
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price Breakdown */}
-                  <div className="lg:col-span-2">
-                    <div className="bg-white dark:bg-jet-900 p-6 rounded-xl border border-gold/30 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-                      <h3 className="text-xl font-display text-jet-950 dark:text-white mb-6">Price Breakdown</h3>
-                      
-                      <div className="space-y-4 text-sm border-b border-jet-800 pb-6 mb-6">
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-300">Base Price (Est.)</span>
-                          <span className="text-jet-950 dark:text-white">$35,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-600 dark:text-slate-300">Taxes & Fees</span>
-                          <span className="text-jet-950 dark:text-white">$2,450</span>
-                        </div>
-                        {Object.values(formData.extras).some(Boolean) && (
-                          <div className="flex justify-between">
-                            <span className="text-slate-600 dark:text-slate-300">Selected Extras</span>
-                            <span className="text-jet-950 dark:text-white">$1,200</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex justify-between items-end mb-8">
-                        <span className="text-slate-600 dark:text-slate-300 font-medium">Total Estimate</span>
-                        <span className="text-3xl font-display text-gold font-bold">$38,650</span>
-                      </div>
-
-                      <label className="flex items-start gap-3 mb-6 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="mt-1 form-checkbox h-4 w-4 text-gold rounded border-jet-700 bg-slate-50 dark:bg-jet-950"
-                          checked={formData.termsAccepted}
-                          onChange={(e) => updateForm("termsAccepted", e.target.checked)}
-                        />
-                        <span className="text-xs text-slate-500 dark:text-slate-400 leading-tight">
-                          I agree to the Terms of Service and Cancellation Policy. I understand this is an estimate and final pricing will be confirmed.
-                        </span>
-                      </label>
-
-                      <button
-                        className="btn-gold w-full flex justify-center items-center gap-2 py-4 text-lg"
-                        disabled={!formData.termsAccepted}
-                      >
-                        <Check size={20} />
-                        Confirm Booking
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Navigation Buttons */}
-        <div className="mt-8 flex justify-between items-center">
-          <button
-            onClick={prevStep}
-            className={`px-6 py-3 rounded-full flex items-center gap-2 transition-all ${
-              currentStep === 1
-                ? "opacity-0 pointer-events-none"
-                : "text-slate-600 dark:text-slate-300 hover:text-jet-950 dark:text-white bg-white dark:bg-jet-900 hover:bg-jet-800"
-            }`}
-          >
-            <ChevronLeft size={20} /> Back
-          </button>
-          
-          {currentStep < 4 && (
-            <button
-              onClick={nextStep}
-              className="btn-gold flex items-center gap-2"
-            >
-              Continue <ChevronRight size={20} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Chatbot Modal */}
-      {showChatbot && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-jet-950 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl border border-jet-800 flex flex-col h-[500px]">
-            {/* Header */}
-            <div className="bg-gold p-4 flex justify-between items-center text-jet-950">
-              <div>
-                <h3 className="font-bold text-lg">Concierge Service</h3>
-                <p className="text-xs opacity-80">Typically replies in minutes</p>
-              </div>
-              <button onClick={() => setShowChatbot(false)} className="hover:bg-black/10 p-1 rounded-full transition-colors">
-                <X size={24} />
-              </button>
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8 relative z-20">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* LEFT: Search Form Card (60% / 7 cols) */}
+          <div className="lg:col-span-7 bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-xl">
+            <div className="mb-6">
+              <span className="text-[11px] font-body uppercase tracking-widest text-[#C9A052] font-semibold block mb-1">
+                Charter Search
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-[#0F1420]">
+                Where will you fly next?
+              </h2>
+              <p className="text-sm text-[#555555] font-body mt-1">
+                Start with your itinerary. Every flight is private, every detail considered.
+              </p>
             </div>
-            
-            {/* Chat Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-jet-900">
-              {chatMessages.map((msg, i) => (
-                <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[85%] p-3 ${msg.sender === 'user' ? 'bg-jet-950 dark:bg-jet-800 text-white rounded-2xl rounded-tr-none' : 'bg-white dark:bg-jet-950 border border-jet-200 dark:border-jet-800 text-jet-950 dark:text-white rounded-2xl rounded-tl-none shadow-sm'}`}>
-                    <p className="text-sm whitespace-pre-wrap">{msg.text}</p>
-                    {msg.isAction && (
-                      <button 
-                        onClick={() => {
-                          setShowChatbot(false);
-                          setCurrentStep(4);
-                        }}
-                        className="mt-3 w-full btn-gold py-2 px-4 rounded text-sm font-semibold flex justify-center items-center gap-2 bg-gold text-jet-950"
-                      >
-                        <CreditCard size={16} /> Pay & Review
-                      </button>
-                    )}
-                  </div>
-                </div>
+
+            {/* Trip Type Tabs */}
+            <div className="flex items-center gap-2 p-1.5 bg-[#F5F2EC] rounded-xl w-fit mb-6">
+              {(
+                [
+                  { id: "one-way", label: "One way" },
+                  { id: "round-trip", label: "Round trip" },
+                  { id: "multi-city", label: "Multi-city" },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setTripType(tab.id)}
+                  className={`px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all ${
+                    tripType === tab.id
+                      ? "bg-white text-[#0F1420] shadow-sm font-semibold"
+                      : "text-[#555555] hover:text-[#0F1420]"
+                  }`}
+                >
+                  {tab.label}
+                </button>
               ))}
             </div>
-            
-            {/* Input */}
-            <form onSubmit={handleSendMessage} className="p-4 bg-white dark:bg-jet-950 border-t border-jet-200 dark:border-jet-800 flex gap-2">
-              <input 
-                type="text" 
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Type your message..." 
-                className="flex-1 bg-slate-100 dark:bg-jet-900 border-none rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gold text-jet-950 dark:text-white"
-              />
-              <button type="submit" className="bg-gold text-jet-950 p-2 rounded-full hover:bg-gold/90 transition-colors">
-                <Send size={18} />
-              </button>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Route: From & To */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* FROM */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    From
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
+                      <PlaneTakeoff className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={from}
+                      onChange={(e) => setFrom(e.target.value)}
+                      placeholder="e.g. London Farnborough (FAB)"
+                      className="input-field pl-10"
+                    />
+                  </div>
+                  <span className="text-[11px] text-[#888888] mt-1 block">
+                    Departure airport or private terminal
+                  </span>
+                </div>
+
+                {/* TO */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    To
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
+                      <PlaneLanding className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="text"
+                      required
+                      value={to}
+                      onChange={(e) => setTo(e.target.value)}
+                      placeholder="e.g. Nice Côte d'Azur (NCE)"
+                      className="input-field pl-10"
+                    />
+                  </div>
+                  <span className="text-[11px] text-[#888888] mt-1 block">
+                    Destination city or runway
+                  </span>
+                </div>
+              </div>
+
+              {/* Schedule: Departure Date & Time */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Departure Date */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Departure Date
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="date"
+                      required
+                      value={departureDate}
+                      onChange={(e) => setDepartureDate(e.target.value)}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+
+                {/* Departure Time */}
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Departure Time
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
+                      <Clock className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="time"
+                      value={departureTime}
+                      onChange={(e) => setDepartureTime(e.target.value)}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Return Date if Round Trip */}
+              {tripType === "round-trip" && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Return Date
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
+                      <Calendar className="w-4 h-4" />
+                    </div>
+                    <input
+                      type="date"
+                      required
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="input-field pl-10"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Passengers Selector */}
+              <div>
+                <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                  Passengers
+                </label>
+                <div className="flex items-center justify-between p-3 border border-gray-200 rounded-xl bg-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-[#F5F2EC] flex items-center justify-center text-[#C9A052]">
+                      <Users className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-sm font-semibold text-[#0F1420] block">
+                        {passengers} {passengers === 1 ? "Passenger" : "Passengers"}
+                      </span>
+                      <span className="text-[11px] text-[#888888]">
+                        Full private cabin reserved
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handlePassengersChange(-1)}
+                      disabled={passengers <= 1}
+                      className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Decrease passenger count"
+                    >
+                      <Minus className="w-4 h-4" />
+                    </button>
+                    <span className="font-semibold text-base w-6 text-center text-[#0F1420]">
+                      {passengers}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handlePassengersChange(1)}
+                      disabled={passengers >= 19}
+                      className="w-9 h-9 rounded-lg border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                      aria-label="Increase passenger count"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Flexibility Checkbox */}
+              <div className="flex items-start gap-3 pt-1">
+                <input
+                  id="flexibleTime"
+                  type="checkbox"
+                  checked={flexibleTime}
+                  onChange={(e) => setFlexibleTime(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
+                />
+                <label
+                  htmlFor="flexibleTime"
+                  className="text-xs text-[#555555] font-body leading-relaxed cursor-pointer"
+                >
+                  My departure time is flexible by ±2 hours. (Provides enhanced operator availability and optimal departure slots).
+                </label>
+              </div>
+
+              {/* Form Bottom Row: Disclaimer & Submit Button */}
+              <div className="pt-4 border-t border-[#E8E5DF] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="text-xs text-[#888888] font-body max-w-xs">
+                  Private terminals · Direct rampside boarding · Zero dwell time
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn-gold w-full sm:w-auto px-8 py-3.5 shadow-md flex items-center justify-center gap-2"
+                >
+                  <span>Search flights</span>
+                  <ArrowUpRight className="w-4 h-4" />
+                </button>
+              </div>
             </form>
           </div>
+
+          {/* RIGHT: Destination Inspiration Card (40% / 5 cols) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-3xl border border-[#E8E5DF] overflow-hidden shadow-lg group">
+              {/* Image with overlay badge */}
+              <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1533104816931-20fa691ff6ca?w=800&fit=crop&q=80"
+                  alt="Nice, Côte d'Azur"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#0F1420]/90 via-[#0F1420]/30 to-transparent" />
+                
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-white/90 backdrop-blur-md text-[#0F1420]">
+                    Destination Inspiration
+                  </span>
+                </div>
+
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <span className="text-xs font-semibold text-[#E8D5A3] uppercase tracking-wider block">
+                    French Riviera
+                  </span>
+                  <h3 className="font-display text-2xl font-bold text-white">
+                    Nice, Côte d&apos;Azur
+                  </h3>
+                  <p className="text-xs text-gray-200 mt-1 line-clamp-2 font-body">
+                    Direct apron transfer into Nice Côte d&apos;Azur (NCE). From private jet to the Mediterranean in under 15 minutes.
+                  </p>
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6 bg-white space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-xs py-2 border-b border-gray-100">
+                  <div>
+                    <span className="text-[#888888] block">Est. Flight Time</span>
+                    <span className="font-semibold text-[#0F1420]">2h 00m Nonstop</span>
+                  </div>
+                  <div>
+                    <span className="text-[#888888] block">Popular Aircraft</span>
+                    <span className="font-semibold text-[#0F1420]">Praetor 600</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    handleSelectQuickRoute(
+                      "London Farnborough (FAB)",
+                      "Nice Côte d'Azur (NCE)"
+                    )
+                  }
+                  className="w-full py-2.5 px-4 rounded-xl border border-[#C9A052] text-[#C9A052] hover:bg-[#C9A052] hover:text-[#0F1420] text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Select Route: London → Nice</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Concierge Assurance Card */}
+            <div className="bg-[#F5F2EC] rounded-2xl p-6 border border-[#E8E5DF]/60">
+              <div className="flex items-center gap-3 mb-2">
+                <ShieldCheck className="w-5 h-5 text-[#C9A052]" />
+                <h4 className="font-display text-base font-bold text-[#0F1420]">
+                  SKYVANTAGE Assurance
+                </h4>
+              </div>
+              <p className="text-xs text-[#555555] font-body leading-relaxed">
+                Every charter quote is backed by guaranteed operator standards, strict safety auditing, and direct ramp access at VIP terminals across 4,000+ global airfields.
+              </p>
+            </div>
+          </div>
         </div>
-      )}
-    </main>
-  );
-}
 
-import { Suspense } from "react";
+        {/* 3 Feature Badges Below Form */}
+        <div className="mt-14 pt-10 border-t border-[#E8E5DF] grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Feature 1 */}
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#0F1420] text-[#C9A052] flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Clock className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-display text-lg font-bold text-[#0F1420] mb-1">
+                Your schedule, not a timetable
+              </h4>
+              <p className="text-xs sm:text-sm text-[#555555] font-body leading-relaxed">
+                Depart when ready. Board through private FBO terminals with 15-minute tarmac arrival and zero security lines.
+              </p>
+            </div>
+          </div>
 
-export default function BookingPage() {
-  return (
-    <Suspense fallback={<div className="min-h-screen pt-24 pb-16 bg-slate-50 dark:bg-jet-950 flex items-center justify-center text-gold">Loading...</div>}>
-      <BookingContent />
-    </Suspense>
+          {/* Feature 2 */}
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#0F1420] text-[#C9A052] flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Lock className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-display text-lg font-bold text-[#0F1420] mb-1">
+                A cabin that is entirely yours
+              </h4>
+              <p className="text-xs sm:text-sm text-[#555555] font-body leading-relaxed">
+                Uncompromising privacy, bespoke acoustic engineering, and tailored environments for business, family, or quiet contemplation.
+              </p>
+            </div>
+          </div>
+
+          {/* Feature 3 */}
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-[#0F1420] text-[#C9A052] flex items-center justify-center flex-shrink-0 shadow-sm">
+              <Headphones className="w-6 h-6" />
+            </div>
+            <div>
+              <h4 className="font-display text-lg font-bold text-[#0F1420] mb-1">
+                A personal touch, throughout
+              </h4>
+              <p className="text-xs sm:text-sm text-[#555555] font-body leading-relaxed">
+                A dedicated charter concierge oversees catering, flight permits, customs pre-clearance, and seamless onward transit.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

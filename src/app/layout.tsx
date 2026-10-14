@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import Chatbot from "@/components/ui/Chatbot";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -18,20 +19,24 @@ const inter = Inter({
   weight: ["300", "400", "500", "600", "700"],
 });
 
-import { ThemeProvider } from "@/components/ThemeProvider";
-
 export const metadata: Metadata = {
-  title: "JetElite | Luxury Private Jet Charter & Booking",
+  title: "SKYVANTAGE | Private Jet Charter — A Higher Perspective on Travel",
   description:
-    "Experience unparalleled luxury in private aviation. Book your private jet charter with JetElite — seamless booking, world-class fleet, and bespoke travel experiences.",
+    "Private jet charter, shaped around you. Travel on your terms, with every detail considered. SKYVANTAGE — a higher perspective on private travel.",
   keywords: [
-    "private jet",
-    "charter flights",
-    "luxury aviation",
-    "jet booking",
+    "private jet charter",
     "private aviation",
     "jet charter",
+    "business jet",
+    "luxury aviation",
+    "private flight booking",
+    "SKYVANTAGE",
   ],
+  openGraph: {
+    title: "SKYVANTAGE | Private Jet Charter",
+    description: "Your time. Your destination. Your private sky.",
+    type: "website",
+  },
 };
 
 export default function RootLayout({
@@ -42,18 +47,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} font-body antialiased bg-slate-50 dark:bg-jet-950 text-jet-950 dark:text-white transition-colors duration-300`}
+        className={`${playfair.variable} ${inter.variable} font-body antialiased bg-white text-gray-900`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <Navbar />
+        <main>{children}</main>
+        <Footer />
+        <Chatbot />
       </body>
     </html>
   );

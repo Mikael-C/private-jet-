@@ -1,99 +1,110 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-import { Users, Route, ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-const fleet = [
-  { id: 1, category: "Light Jet", name: "Citation CJ4", passengers: 8, range: "2,165 nm", price: "3,500", image: "/images/jet-tarmac.jpg" },
-  { id: 2, category: "Midsize", name: "Hawker 800XP", passengers: 9, range: "2,540 nm", price: "4,800", image: "/images/jet-luxury.jpg" },
-  { id: 3, category: "Super-Mid", name: "Challenger 350", passengers: 10, range: "3,200 nm", price: "6,200", image: "/images/jet-tarmac.jpg" },
-  { id: 4, category: "Heavy", name: "Gulfstream G650", passengers: 16, range: "7,000 nm", price: "9,500", image: "/images/jet-luxury.jpg" },
-];
+import { ArrowUpRight, Users, Compass } from "lucide-react";
+import { fleetData } from "@/data/fleet";
 
 export default function FleetPreview() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
+  const targetIds = ["citation-cj3-plus", "praetor-600", "gulfstream-g650er"];
+  const featuredAircraft = targetIds
+    .map((id) => fleetData.find((jet) => jet.id === id))
+    .filter(Boolean);
 
   return (
-    <section className="py-24 bg-white dark:bg-jet-900 overflow-hidden">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="flex flex-col md:flex-row justify-between items-end mb-12">
-          <div>
-            <span className="section-label text-gold uppercase tracking-widest text-sm font-semibold mb-2 block">Our Fleet</span>
-            <h2 className="section-title font-display text-4xl md:text-5xl text-jet-950 dark:text-white font-bold">
-              World-Class <span className="text-gold-gradient text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold">Aircraft</span>
+    <section className="bg-white py-20 md:py-28 px-6 md:px-12 lg:px-20 border-b border-gray-100">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <div className="max-w-2xl">
+            <div className="section-label">
+              FIND YOUR PERFECT AIRCRAFT
+            </div>
+            <h2 className="heading-lg font-display text-[#0F1420] mb-3">
+              The right jet. For your journey.
             </h2>
+            <p className="text-gray-600 font-body text-base leading-relaxed">
+              From a short business hop to a long-awaited escape, discover the aircraft that fits your plans.
+            </p>
           </div>
-          <Link href="/fleet" className="hidden md:flex items-center text-gold hover:text-gold-light transition-colors group mt-6 md:mt-0">
-            <span className="mr-2 font-medium">View Full Fleet</span>
-            <ArrowRight size={20} className="transform group-hover:translate-x-1 transition-transform" />
-          </Link>
+
+          <div>
+            <Link
+              href="/fleet"
+              className="link-arrow text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-2 font-semibold text-sm group"
+            >
+              <span>View the fleet</span>
+              <ArrowUpRight className="w-4 h-4 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </div>
         </div>
 
-        <div 
-          ref={containerRef}
-          className="flex overflow-x-auto pb-8 -mx-6 px-6 md:mx-0 md:px-0 gap-6 snap-x hide-scrollbar"
-        >
-          {fleet.map((jet, idx) => (
-            <div
-              key={jet.id}
-              className={`glass-card-hover min-w-[320px] md:min-w-[400px] flex-shrink-0 bg-slate-50/60 dark:bg-jet-950/60 border border-slate-200 dark:border-white/5 rounded-2xl overflow-hidden snap-center transition-all duration-700 ease-out transform ${
-                isVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'
-              }`}
-              style={{ transitionDelay: `${idx * 150}ms` }}
-            >
-              <div className="relative h-56 w-full">
-                <Image src={jet.image} alt={jet.name} fill className="object-cover" />
-                <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm text-gold border border-gold/30 px-3 py-1 rounded-full text-xs font-semibold tracking-wide">
-                  {jet.category}
+        {/* 3 Aircraft Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {featuredAircraft.map((jet) => {
+            if (!jet) return null;
+            return (
+              <div
+                key={jet.id}
+                className="card flex flex-col justify-between group border border-gray-100 bg-white"
+              >
+                {/* Image Container */}
+                <div>
+                  <div className="relative h-64 overflow-hidden bg-gray-100">
+                    <img
+                      src={jet.imageExterior}
+                      alt={jet.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="bg-[#0F1420]/80 backdrop-blur-md text-gold text-[10px] font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full border border-white/10">
+                        {jet.categoryLabel}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card Content */}
+                  <div className="p-6 md:p-8">
+                    <h3 className="font-display text-2xl font-bold text-[#0F1420] mb-3 group-hover:text-gold transition-colors">
+                      {jet.name}
+                    </h3>
+
+                    {/* Meta info */}
+                    <div className="flex flex-wrap items-center gap-4 text-xs font-body text-gray-500 mb-4 pb-4 border-b border-gray-100">
+                      <div className="flex items-center gap-1.5">
+                        <Users className="w-3.5 h-3.5 text-gold" />
+                        <span>{jet.passengersLabel}</span>
+                      </div>
+                      <span className="text-gray-300">•</span>
+                      <div className="flex items-center gap-1.5">
+                        <Compass className="w-3.5 h-3.5 text-gold" />
+                        <span>{jet.travelType}</span>
+                      </div>
+                    </div>
+
+                    <p className="text-sm font-body text-gray-600 leading-relaxed mb-6">
+                      {jet.tagline}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Card Action */}
+                <div className="px-6 md:px-8 pb-6 md:pb-8 pt-0">
+                  <Link
+                    href={`/fleet/${jet.id}`}
+                    className="link-arrow font-semibold text-sm text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-2 group/link"
+                  >
+                    <span>Explore aircraft</span>
+                    <ArrowUpRight className="w-4 h-4 text-gold transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                  </Link>
                 </div>
               </div>
-              <div className="p-6">
-                <h3 className="text-2xl font-display text-jet-950 dark:text-white font-bold mb-4">{jet.name}</h3>
-                <div className="flex justify-between items-center mb-6 text-slate-600 dark:text-slate-300 text-sm">
-                  <div className="flex items-center">
-                    <Users size={16} className="text-gold mr-2" />
-                    <span>{jet.passengers} pax</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Route size={16} className="text-gold mr-2" />
-                    <span>{jet.range}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center border-t border-slate-200 dark:border-white/10 pt-4">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">Starting at</span>
-                  <span className="text-jet-950 dark:text-white font-semibold text-lg">
-                    ${jet.price}<span className="text-sm text-slate-500 dark:text-slate-400 font-normal">/hr</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
-        
-        <div className="mt-8 md:hidden flex justify-center">
-          <Link href="/fleet" className="flex items-center text-gold hover:text-gold-light transition-colors group">
-            <span className="mr-2 font-medium">View Full Fleet</span>
-            <ArrowRight size={20} className="transform group-hover:translate-x-1 transition-transform" />
-          </Link>
+
+        {/* Bottom Disclaimer */}
+        <div className="mt-12 text-center">
+          <p className="text-xs font-body text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            Aircraft shown are representative charter options. Cabin configuration, passenger capacity and availability vary by aircraft and itinerary.
+          </p>
         </div>
       </div>
     </section>

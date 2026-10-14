@@ -1,76 +1,95 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
-
-const destinations = [
-  { name: "Paris", country: "France", price: "5,400", image: "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=600" },
-  { name: "Dubai", country: "UAE", price: "8,200", image: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=600" },
-  { name: "London", country: "UK", price: "4,800", image: "https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=600" },
-  { name: "Tokyo", country: "Japan", price: "12,500", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=600" },
-  { name: "New York", country: "USA", price: "9,100", image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=600" },
-  { name: "Sydney", country: "Australia", price: "15,300", image: "https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=600" }
-];
+import Link from "next/link";
+import { ArrowUpRight, Clock } from "lucide-react";
+import { destinations } from "@/data/destinations";
 
 export default function Destinations() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-    return () => observer.disconnect();
-  }, []);
+  const targetIds = ["nice-cote-dazur", "dubai", "new-york"];
+  const featuredDestinations = targetIds
+    .map((id) => destinations.find((d) => d.id === id))
+    .filter(Boolean);
 
   return (
-    <section className="py-24 bg-slate-50 dark:bg-jet-950 overflow-hidden">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="text-center mb-16">
-          <span className="section-label text-gold uppercase tracking-widest text-sm font-semibold mb-2 block">Explore</span>
-          <h2 className="section-title font-display text-4xl md:text-5xl text-jet-950 dark:text-white font-bold">
-            Popular <span className="text-gold-gradient text-transparent bg-clip-text bg-gradient-to-r from-gold-light to-gold">Destinations</span>
-          </h2>
+    <section className="bg-white py-20 md:py-28 px-6 md:px-12 lg:px-20 border-b border-gray-100">
+      <div className="max-w-7xl mx-auto">
+        {/* Header Row */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
+          <div className="max-w-2xl">
+            <div className="section-label">
+              A WORLD CLOSER THAN YOU THINK
+            </div>
+            <h2 className="heading-lg font-display text-[#0F1420] mb-3">
+              A world closer than you think.
+            </h2>
+            <p className="text-gray-600 font-body text-base leading-relaxed">
+              From the Riviera to the Gulf, the islands to the skyline. Private charter changes what is possible.
+            </p>
+          </div>
+
+          <div>
+            <Link
+              href="/destinations"
+              className="link-arrow text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-2 font-semibold text-sm group"
+            >
+              <span>View all destinations</span>
+              <ArrowUpRight className="w-4 h-4 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </Link>
+          </div>
         </div>
 
-        <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {destinations.map((dest, idx) => (
-            <div
-              key={dest.name}
-              className={`group relative h-80 rounded-2xl overflow-hidden cursor-pointer shadow-xl transition-all duration-700 ease-out transform ${
-                isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'
-              }`}
-              style={{ transitionDelay: `${idx * 100}ms` }}
-            >
-              <Image
-                src={dest.image}
-                alt={dest.name}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-jet-950 via-jet-950/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
-              <div className="absolute inset-0 border-2 border-transparent group-hover:border-gold/50 rounded-2xl transition-colors duration-500 pointer-events-none" />
-              
-              <div className="absolute bottom-0 left-0 p-6 w-full flex justify-between items-end">
-                <div>
-                  <h3 className="text-2xl font-display text-jet-950 dark:text-white font-bold group-hover:text-gold-light transition-colors">{dest.name}</h3>
-                  <p className="text-slate-600 dark:text-slate-300 text-sm">{dest.country}</p>
+        {/* 3 Destination Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {featuredDestinations.map((dest) => {
+            if (!dest) return null;
+            return (
+              <div
+                key={dest.id}
+                className="card flex flex-col justify-between group border border-gray-100 bg-white"
+              >
+                {/* Image & City overlay */}
+                <div className="relative h-72 overflow-hidden bg-gray-100">
+                  <img
+                    src={dest.image}
+                    alt={`${dest.city}, ${dest.country}`}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0F1420]/80 via-[#0F1420]/20 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5 text-white">
+                    <h3 className="font-display text-2xl font-bold text-white mb-0.5">
+                      {dest.city}
+                    </h3>
+                    <p className="text-xs text-white/80 font-body">
+                      {dest.country}
+                    </p>
+                  </div>
                 </div>
-                <div className="bg-gold text-jet-950 text-xs font-bold px-3 py-1.5 rounded-full shadow-lg">
-                  From ${dest.price}
+
+                {/* Content */}
+                <div className="p-6 md:p-8 flex flex-col justify-between flex-1">
+                  <div>
+                    <div className="flex items-center gap-2 text-xs font-semibold text-gold mb-3 uppercase tracking-wider">
+                      <Clock className="w-3.5 h-3.5 text-gold flex-shrink-0" />
+                      <span>{dest.flightTime}</span>
+                    </div>
+
+                    <p className="text-sm font-body text-gray-600 leading-relaxed mb-6">
+                      {dest.description}
+                    </p>
+                  </div>
+
+                  {/* Charter Link */}
+                  <div>
+                    <Link
+                      href={`/booking?destination=${encodeURIComponent(dest.city)}`}
+                      className="link-arrow font-semibold text-sm text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-1.5 group/link"
+                    >
+                      <span>Charter to {dest.city}</span>
+                      <ArrowUpRight className="w-3.5 h-3.5 text-gold transition-transform group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>
