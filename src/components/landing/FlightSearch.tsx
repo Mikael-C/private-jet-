@@ -12,13 +12,14 @@ import {
   Headphones,
   ArrowUpRight,
 } from "lucide-react";
+import AirportAutocomplete from "@/components/ui/AirportAutocomplete";
 
 type TripType = "one-way" | "round-trip" | "multi-city";
 
 export default function FlightSearch() {
   const router = useRouter();
   const [tripType, setTripType] = useState<TripType>("one-way");
-  const [fromLocation, setFromLocation] = useState("London Farnborough (FAB)");
+  const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [departureDate, setDepartureDate] = useState("");
   const [passengers, setPassengers] = useState("2");
@@ -28,7 +29,7 @@ export default function FlightSearch() {
     const params = new URLSearchParams({
       tripType,
       from: fromLocation,
-      to: toLocation || "Nice (NCE)",
+      to: toLocation || "Nice Côte d'Azur (NCE)",
       date: departureDate || new Date().toISOString().split("T")[0],
       passengers: passengers || "2",
     });
@@ -89,41 +90,31 @@ export default function FlightSearch() {
           <form onSubmit={handleSearch}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 lg:gap-3 items-end">
               {/* FROM */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative z-30">
                 <label className="text-[11px] font-body uppercase tracking-wider text-gray-500 font-semibold block">
                   From
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <PlaneTakeoff className="w-4 h-4 text-gold" />
-                  </div>
-                  <input
-                    type="text"
-                    value={fromLocation}
-                    onChange={(e) => setFromLocation(e.target.value)}
-                    placeholder="Departure airport / city"
-                    className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3.5 text-sm font-body text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
-                  />
-                </div>
+                <AirportAutocomplete
+                  id="from-location"
+                  value={fromLocation}
+                  onChange={(val) => setFromLocation(val)}
+                  placeholder="Departure airport or code (e.g. FAB)"
+                  icon={<PlaneTakeoff className="w-4 h-4 text-[#C9A052]" />}
+                />
               </div>
 
               {/* TO */}
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 relative z-20">
                 <label className="text-[11px] font-body uppercase tracking-wider text-gray-500 font-semibold block">
                   To
                 </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                    <PlaneLanding className="w-4 h-4 text-gold" />
-                  </div>
-                  <input
-                    type="text"
-                    value={toLocation}
-                    onChange={(e) => setToLocation(e.target.value)}
-                    placeholder="Where would you like to go?"
-                    className="w-full bg-white border border-gray-200 rounded-xl pl-10 pr-4 py-3.5 text-sm font-body text-gray-900 focus:outline-none focus:border-gold focus:ring-1 focus:ring-gold transition-colors"
-                  />
-                </div>
+                <AirportAutocomplete
+                  id="to-location"
+                  value={toLocation}
+                  onChange={(val) => setToLocation(val)}
+                  placeholder="Where would you like to fly? (e.g. NCE)"
+                  icon={<PlaneLanding className="w-4 h-4 text-[#C9A052]" />}
+                />
               </div>
 
               {/* DEPARTURE */}

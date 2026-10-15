@@ -62,13 +62,13 @@ export const fleetData: Aircraft[] = [
       duration: "1h 15m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1200&fit=crop&q=80",
+      "/images/fleet/citation-cj3-plus/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=1200&fit=crop&q=80",
+      "/images/fleet/citation-cj3-plus/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&fit=crop&q=80",
+      "/images/fleet/citation-cj3-plus/gallery-1.jpg",
+      "/images/fleet/citation-cj3-plus/gallery-2.jpg",
+      "/images/fleet/citation-cj3-plus/gallery-3.jpg",
     ],
     amenities: [
       "Club seating for 6",
@@ -111,13 +111,13 @@ export const fleetData: Aircraft[] = [
       duration: "1h 40m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=1200&fit=crop&q=80",
+      "/images/fleet/phenom-300e/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1569880153113-76e33fc52d5f?w=1200&fit=crop&q=80",
+      "/images/fleet/phenom-300e/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1556388158-158ea5ccacbd?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1569880153113-76e33fc52d5f?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1504150558240-0b4fd8946624?w=800&fit=crop&q=80",
+      "/images/fleet/phenom-300e/gallery-1.jpg",
+      "/images/fleet/phenom-300e/gallery-2.jpg",
+      "/images/fleet/phenom-300e/gallery-3.jpg",
     ],
     amenities: [
       "Flat-floor cabin",
@@ -160,13 +160,13 @@ export const fleetData: Aircraft[] = [
       duration: "2h 00m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1200&fit=crop&q=80",
+      "/images/fleet/learjet-75-liberty/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=1200&fit=crop&q=80",
+      "/images/fleet/learjet-75-liberty/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1474302770737-173ee21bab63?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1569880153113-76e33fc52d5f?w=800&fit=crop&q=80",
+      "/images/fleet/learjet-75-liberty/gallery-1.jpg",
+      "/images/fleet/learjet-75-liberty/gallery-2.jpg",
+      "/images/fleet/learjet-75-liberty/gallery-3.jpg",
     ],
     amenities: [
       "Stand-up cabin",
@@ -209,13 +209,13 @@ export const fleetData: Aircraft[] = [
       duration: "2h 00m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1604537466608-109fa2f16c3b?w=1200&fit=crop&q=80",
+      "/images/fleet/praetor-600/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=1200&fit=crop&q=80",
+      "/images/fleet/praetor-600/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1604537466608-109fa2f16c3b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&fit=crop&q=80",
+      "/images/fleet/praetor-600/gallery-1.jpg",
+      "/images/fleet/praetor-600/gallery-2.jpg",
+      "/images/fleet/praetor-600/gallery-3.jpg",
     ],
     amenities: [
       "Stand-up cabin (1.83m)",
@@ -259,13 +259,13 @@ export const fleetData: Aircraft[] = [
       duration: "6h 30m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=1200&fit=crop&q=80",
+      "/images/fleet/challenger-350/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=1200&fit=crop&q=80",
+      "/images/fleet/challenger-350/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1604537466608-109fa2f16c3b?w=800&fit=crop&q=80",
+      "/images/fleet/challenger-350/gallery-1.jpg",
+      "/images/fleet/challenger-350/gallery-2.jpg",
+      "/images/fleet/challenger-350/gallery-3.jpg",
     ],
     amenities: [
       "Wide-body cabin",
@@ -309,13 +309,13 @@ export const fleetData: Aircraft[] = [
       duration: "12h 00m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1564638340824-dc51e0a7eb78?w=1200&fit=crop&q=80",
+      "/images/fleet/gulfstream-g550/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=1200&fit=crop&q=80",
+      "/images/fleet/gulfstream-g550/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1564638340824-dc51e0a7eb78?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=800&fit=crop&q=80",
+      "/images/fleet/gulfstream-g550/gallery-1.jpg",
+      "/images/fleet/gulfstream-g550/gallery-2.jpg",
+      "/images/fleet/gulfstream-g550/gallery-3.jpg",
     ],
     amenities: [
       "Full stand-up cabin",
@@ -359,13 +359,13 @@ export const fleetData: Aircraft[] = [
       duration: "7h 30m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1535953472862-9cc610a70f8a?w=1200&fit=crop&q=80",
+      "/images/fleet/gulfstream-g650er/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=1200&fit=crop&q=80",
+      "/images/fleet/gulfstream-g650er/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1535953472862-9cc610a70f8a?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1611095790444-1dfa35e37b52?w=800&fit=crop&q=80",
+      "/images/fleet/gulfstream-g650er/gallery-1.jpg",
+      "/images/fleet/gulfstream-g650er/gallery-2.jpg",
+      "/images/fleet/gulfstream-g650er/gallery-3.jpg",
     ],
     amenities: [
       "Largest windows in class",
@@ -410,13 +410,13 @@ export const fleetData: Aircraft[] = [
       duration: "10h 30m",
     },
     imageExterior:
-      "https://images.unsplash.com/photo-1504150558240-0b4fd8946624?w=1200&fit=crop&q=80",
+      "/images/fleet/global-7500/exterior.jpg",
     imageInterior:
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=1200&fit=crop&q=80",
+      "/images/fleet/global-7500/interior.jpg",
     imageGallery: [
-      "https://images.unsplash.com/photo-1504150558240-0b4fd8946624?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1570710891163-6d3b5c47248b?w=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1535953472862-9cc610a70f8a?w=800&fit=crop&q=80",
+      "/images/fleet/global-7500/gallery-1.jpg",
+      "/images/fleet/global-7500/gallery-2.jpg",
+      "/images/fleet/global-7500/gallery-3.jpg",
     ],
     amenities: [
       "Four living spaces",

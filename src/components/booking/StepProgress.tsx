@@ -14,7 +14,7 @@ const steps = [
   { number: 4, label: "Review" },
   { number: 5, label: "Passengers" },
   { number: 6, label: "Services" },
-  { number: 7, label: "Payment" },
+  { number: 7, label: "Quotation" },
   { number: 8, label: "Confirmation" },
 ];
 

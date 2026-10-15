@@ -9,16 +9,16 @@ export default function Hero() {
       {/* Background Jet Image */}
       <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1535953472862-9cc610a70f8a?w=1800&fit=crop&q=80"
-          alt="Gulfstream G650ER Private Jet"
-          className="w-full h-full object-cover object-right md:object-center"
+          src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?w=1800&fit=crop&q=85"
+          alt="Private Jet on Runway at Dusk"
+          className="w-full h-full object-cover object-center"
         />
-        {/* Gradient Overlay */}
+        {/* Gradient Overlay — strong left fade, reveals jet on right */}
         <div
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(to right, rgba(15,20,32,0.96) 0%, rgba(15,20,32,0.92) 42%, rgba(15,20,32,0.65) 75%, rgba(15,20,32,0.3) 100%)",
+              "linear-gradient(to right, rgba(15,20,32,0.97) 0%, rgba(15,20,32,0.88) 35%, rgba(15,20,32,0.55) 65%, rgba(15,20,32,0.20) 100%)",
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F1420] via-transparent to-transparent md:hidden" />

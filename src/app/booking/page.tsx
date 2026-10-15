@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   PlaneTakeoff,
   PlaneLanding,
@@ -17,6 +17,44 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
+import AirportAutocomplete from "@/components/ui/AirportAutocomplete";
+
+function SearchParamsHandler({
+  onParams,
+}: {
+  onParams: (params: {
+    from?: string;
+    to?: string;
+    date?: string;
+    passengers?: number;
+    tripType?: "one-way" | "round-trip" | "multi-city";
+  }) => void;
+}) {
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (!searchParams) return;
+    const from = searchParams.get("from") || undefined;
+    const to = searchParams.get("to") || undefined;
+    const date = searchParams.get("date") || undefined;
+    const paxStr = searchParams.get("passengers");
+    const passengers = paxStr ? parseInt(paxStr, 10) : undefined;
+    const tripType = searchParams.get("tripType") as
+      | "one-way"
+      | "round-trip"
+      | "multi-city"
+      | null;
+
+    onParams({
+      from,
+      to,
+      date,
+      passengers,
+      tripType: tripType || undefined,
+    });
+  }, [searchParams, onParams]);
+
+  return null;
+}
 
 export default function BookingSearchPage() {
   const router = useRouter();
@@ -25,8 +63,8 @@ export default function BookingSearchPage() {
   const [tripType, setTripType] = useState<"one-way" | "round-trip" | "multi-city">(
     booking.tripType || "one-way"
   );
-  const [from, setFrom] = useState(booking.from || "London Farnborough (FAB)");
-  const [to, setTo] = useState(booking.to || "Nice Côte d'Azur (NCE)");
+  const [from, setFrom] = useState(booking.from || "");
+  const [to, setTo] = useState(booking.to || "");
   const [departureDate, setDepartureDate] = useState(
     booking.departureDate || "2026-10-18"
   );
@@ -36,6 +74,23 @@ export default function BookingSearchPage() {
   const [returnDate, setReturnDate] = useState(booking.returnDate || "2026-10-22");
   const [passengers, setPassengers] = useState(booking.passengers || 2);
   const [flexibleTime, setFlexibleTime] = useState(booking.flexibleTime || false);
+
+  const handleUrlParams = React.useCallback(
+    (params: {
+      from?: string;
+      to?: string;
+      date?: string;
+      passengers?: number;
+      tripType?: "one-way" | "round-trip" | "multi-city";
+    }) => {
+      if (params.from) setFrom(params.from);
+      if (params.to) setTo(params.to);
+      if (params.date) setDepartureDate(params.date);
+      if (params.passengers) setPassengers(params.passengers);
+      if (params.tripType) setTripType(params.tripType);
+    },
+    []
+  );
 
   const handlePassengersChange = (delta: number) => {
     setPassengers((prev) => {
@@ -136,50 +191,42 @@ export default function BookingSearchPage() {
               ))}
             </div>
 
+            <Suspense fallback={null}>
+              <SearchParamsHandler onParams={handleUrlParams} />
+            </Suspense>
+
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Route: From & To */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* FROM */}
-                <div>
+                <div className="relative z-20">
                   <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
                     From
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
-                      <PlaneTakeoff className="w-4 h-4" />
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      value={from}
-                      onChange={(e) => setFrom(e.target.value)}
-                      placeholder="e.g. London Farnborough (FAB)"
-                      className="input-field pl-10"
-                    />
-                  </div>
+                  <AirportAutocomplete
+                    id="booking-from"
+                    value={from}
+                    onChange={(val) => setFrom(val)}
+                    placeholder="e.g. London Farnborough (FAB)"
+                    icon={<PlaneTakeoff className="w-4 h-4 text-[#C9A052]" />}
+                  />
                   <span className="text-[11px] text-[#888888] mt-1 block">
                     Departure airport or private terminal
                   </span>
                 </div>
 
                 {/* TO */}
-                <div>
+                <div className="relative z-10">
                   <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
                     To
                   </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#C9A052]">
-                      <PlaneLanding className="w-4 h-4" />
-                    </div>
-                    <input
-                      type="text"
-                      required
-                      value={to}
-                      onChange={(e) => setTo(e.target.value)}
-                      placeholder="e.g. Nice Côte d'Azur (NCE)"
-                      className="input-field pl-10"
-                    />
-                  </div>
+                  <AirportAutocomplete
+                    id="booking-to"
+                    value={to}
+                    onChange={(val) => setTo(val)}
+                    placeholder="e.g. Nice Côte d'Azur (NCE)"
+                    icon={<PlaneLanding className="w-4 h-4 text-[#C9A052]" />}
+                  />
                   <span className="text-[11px] text-[#888888] mt-1 block">
                     Destination city or runway
                   </span>

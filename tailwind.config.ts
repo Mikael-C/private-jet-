@@ -60,8 +60,10 @@ const config: Config = {
         },
       },
       fontFamily: {
-        display: ["var(--font-playfair)", "Georgia", "serif"],
-        body: ["var(--font-inter)", "system-ui", "sans-serif"],
+        sans: ["var(--font-manrope)", "Manrope", "sans-serif"],
+        display: ["var(--font-manrope)", "Manrope", "sans-serif"],
+        body: ["var(--font-manrope)", "Manrope", "sans-serif"],
+        manrope: ["var(--font-manrope)", "Manrope", "sans-serif"],
       },
       fontSize: {
         "display-xl": ["5rem", { lineHeight: "1.05", letterSpacing: "-0.02em" }],

@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Chatbot from "@/components/ui/Chatbot";
 
-const playfair = Playfair_Display({
+const manrope = Manrope({
   subsets: ["latin"],
-  variable: "--font-playfair",
+  variable: "--font-manrope",
   display: "swap",
-  weight: ["400", "500", "600", "700", "800", "900"],
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -45,9 +38,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={manrope.variable} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body
-        className={`${playfair.variable} ${inter.variable} font-body antialiased bg-white text-gray-900`}
+        className={`${manrope.className} ${manrope.variable} font-sans antialiased bg-white text-gray-900`}
       >
         <Navbar />
         <main>{children}</main>

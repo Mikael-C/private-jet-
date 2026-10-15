@@ -35,14 +35,14 @@ export default function Navbar() {
         {/* Brand Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-white group focus:outline-none"
-          aria-label="SKYVANTAGE Home"
+          className="flex items-center focus:outline-none"
+          aria-label="Orbelo Home"
         >
-          <span className="font-display text-xl md:text-2xl font-bold tracking-widest text-white uppercase group-hover:text-gold-light transition-colors">
-            SKYVANTAGE
-          </span>
-          <span className="text-gold text-xs font-bold leading-none transform -rotate-12 group-hover:rotate-0 transition-transform">
-            ▲
+          <span
+            className="font-display text-2xl md:text-3xl font-bold transition-opacity hover:opacity-90"
+            style={{ color: "#FF6B00", fontFamily: "var(--font-manrope), sans-serif", letterSpacing: "-0.01em" }}
+          >
+            Orbelo
           </span>
         </Link>
 
@@ -61,15 +61,13 @@ export default function Navbar() {
 
         {/* Right CTA Button */}
         <div className="hidden md:flex items-center">
-          <a
-            href="https://wa.me/447010452726"
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            onClick={() => window.dispatchEvent(new Event("open-concierge-chat"))}
             className="btn-nav"
           >
             <span>Contact concierge</span>
             <ArrowUpRight className="w-3.5 h-3.5 opacity-80" />
-          </a>
+          </button>
         </div>
 
         {/* Mobile Hamburger Button */}
@@ -99,16 +97,16 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="pt-4 mt-2 border-t border-white/10">
-              <a
-                href="https://wa.me/447010452726"
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setIsMobileMenuOpen(false)}
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  window.dispatchEvent(new Event("open-concierge-chat"));
+                }}
                 className="btn-nav w-full justify-center text-center"
               >
                 <span>Contact concierge</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
-              </a>
+              </button>
             </div>
           </nav>
         </div>
