@@ -1,16 +1,8 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import Chatbot from "@/components/ui/Chatbot";
-
-const manrope = Manrope({
-  subsets: ["latin"],
-  variable: "--font-manrope",
-  display: "swap",
-  weight: ["300", "400", "500", "600", "700", "800"],
-});
 
 export const metadata: Metadata = {
   title: "SKYVANTAGE | Private Jet Charter — A Higher Perspective on Travel",
@@ -38,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={manrope.variable} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -48,7 +40,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${manrope.className} ${manrope.variable} font-sans antialiased bg-white text-gray-900`}
+        className="font-sans antialiased bg-white text-gray-900"
       >
         <Navbar />
         <main>{children}</main>

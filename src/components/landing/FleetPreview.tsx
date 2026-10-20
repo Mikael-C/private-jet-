@@ -15,13 +15,13 @@ export default function FleetPreview() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">
           <div className="max-w-2xl">
             <div className="section-label">
-              FIND YOUR PERFECT AIRCRAFT
+              AIRCRAFT CATEGORIES
             </div>
             <h2 className="heading-lg font-display text-[#0F1420] mb-3">
-              The right jet. For your journey.
+              The right category. For your journey.
             </h2>
             <p className="text-gray-600 font-body text-base leading-relaxed">
-              From a short business hop to a long-awaited escape, discover the aircraft that fits your plans.
+              From nimble regional turboprops to transcontinental flagships, discover the aircraft category that fits your mission.
             </p>
           </div>
 
@@ -30,7 +30,7 @@ export default function FleetPreview() {
               href="/fleet"
               className="link-arrow text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-2 font-semibold text-sm group"
             >
-              <span>View the fleet</span>
+              <span>View aircraft categories</span>
               <ArrowUpRight className="w-4 h-4 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
           </div>

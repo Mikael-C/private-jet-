@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 
@@ -51,15 +53,18 @@ export default function CTA() {
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
             </Link>
 
-            <a
-              href="https://wa.me/447010452726"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline inline-flex items-center justify-center gap-2 group px-8 py-4 font-medium text-center"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("open-concierge-chat"));
+                }
+              }}
+              className="btn-outline inline-flex items-center justify-center gap-2 group px-8 py-4 font-medium text-center cursor-pointer"
             >
               <span>Talk to our concierge</span>
               <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
+            </button>
           </div>
         </div>
       </div>

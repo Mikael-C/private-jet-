@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import {
   ArrowUpRight,
@@ -179,7 +181,7 @@ export default function AboutPage() {
               </h3>
               <p className="text-gray-600 font-body leading-relaxed text-sm md:text-base">
                 Your travel is private. Every detail of your journey is handled
-                with complete confidentiality. We operate under strict privacy
+                with complete confidentiality. We uphold strict privacy
                 protocols trusted by high-net-worth travellers, executives, and
                 dignitaries.
               </p>
@@ -277,16 +279,19 @@ export default function AboutPage() {
               <ArrowUpRight className="w-4 h-4" />
             </Link>
 
-            <a
-              href={whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-outline flex items-center justify-center gap-2 text-sm px-8 py-4 w-full sm:w-auto"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("open-concierge-chat"));
+                }
+              }}
+              className="btn-outline flex items-center justify-center gap-2 text-sm px-8 py-4 w-full sm:w-auto cursor-pointer"
             >
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <MessageCircle className="w-4 h-4 text-[#C9A052]" />
               <span>Speak to our concierge</span>
               <ArrowUpRight className="w-4 h-4" />
-            </a>
+            </button>
           </div>
         </div>
       </section>

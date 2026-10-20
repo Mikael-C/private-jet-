@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Instagram, Linkedin, ArrowUpRight } from "lucide-react";
 
@@ -77,7 +79,7 @@ export default function Footer() {
                   href="/fleet"
                   className="hover:text-white hover:translate-x-0.5 transition-all inline-block"
                 >
-                  Aircraft collection
+                  Aircraft categories
                 </Link>
               </li>
               <li>
@@ -147,15 +149,18 @@ export default function Footer() {
             </h4>
             <ul className="space-y-3.5 text-sm font-body text-white/70">
               <li>
-                <a
-                  href="https://wa.me/447010452726"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-white hover:translate-x-0.5 transition-all inline-flex items-center gap-1.5"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new Event("open-concierge-chat"));
+                    }
+                  }}
+                  className="hover:text-white hover:translate-x-0.5 transition-all inline-flex items-center gap-1.5 text-left cursor-pointer"
                 >
                   <span>Contact concierge</span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-gold" />
-                </a>
+                  <ArrowUpRight className="w-3.5 h-3.5 text-[#C9A052]" />
+                </button>
               </li>
               <li>
                 <a

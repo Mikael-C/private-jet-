@@ -6,7 +6,7 @@ import { Menu, X, ArrowUpRight } from "lucide-react";
 
 const navLinks = [
   { name: "Private charter", href: "/booking" },
-  { name: "Our fleet", href: "/fleet" },
+  { name: "Aircraft categories", href: "/fleet" },
   { name: "Destinations", href: "/destinations" },
   { name: "About us", href: "/about" },
 ];

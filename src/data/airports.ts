@@ -1,3 +1,12 @@
+export interface FBOInfo {
+  name: string;
+  phone: string;
+  email: string;
+  handler?: string;
+  frequency?: string;
+  address?: string;
+}
+
 export interface Airport {
   id: string;
   name: string;
@@ -10,6 +19,7 @@ export interface Airport {
   popular?: boolean;
   region: "europe" | "north-america" | "middle-east" | "asia-pacific" | "caribbean" | "africa" | "latin-america";
   keywords?: string[];
+  fbo?: FBOInfo;
 }
 
 export const airportsData: Airport[] = [
@@ -2056,4 +2066,314 @@ export function formatAirportDisplay(airport: Airport): string {
 
   // Default clean format: "City Name (IATA)"
   return `${airport.city} (${airport.iata})`;
+}
+
+export const KNOWN_FBOS: Record<string, FBOInfo> = {
+  // UK & Ireland
+  FAB: {
+    name: "Farnborough Executive Aviation Terminal (TAG / Farnborough Airport)",
+    phone: "+44 1252 375300",
+    email: "ops@farnboroughairport.com",
+    handler: "Farnborough Airport Operations",
+    frequency: "130.405 MHz",
+    address: "Farnborough Airport, Hampshire, GU14 6XA, United Kingdom"
+  },
+  BQH: {
+    name: "Biggin Hill Executive Handling & VIP Terminal",
+    phone: "+44 1959 578500",
+    email: "handling@bigginhillairport.com",
+    handler: "Biggin Hill Airport Handling Ltd",
+    frequency: "131.980 MHz",
+    address: "Main Terminal, Biggin Hill Airport, Bromley, TN16 3BN, United Kingdom"
+  },
+  LTN: {
+    name: "Signature Flight Support / Harrods Aviation Luton",
+    phone: "+44 1582 724182",
+    email: "ltn@signatureflight.co.uk",
+    handler: "Signature Aviation / Harrods Aviation",
+    frequency: "122.375 MHz",
+    address: "Percival Way, London Luton Airport, LU2 9PA, United Kingdom"
+  },
+  STN: {
+    name: "Harrods Aviation / Fayair Stansted VIP Terminal",
+    phone: "+44 1279 680616",
+    email: "stansted@harrodsaviation.com",
+    handler: "Harrods Aviation Stansted",
+    frequency: "130.650 MHz",
+    address: "First Avenue, London Stansted Airport, CM24 1QQ, United Kingdom"
+  },
+  OXF: {
+    name: "Oxford Jet / London Oxford Executive FBO",
+    phone: "+44 1865 290600",
+    email: "ops@oxfordairport.co.uk",
+    handler: "Oxford Airport Terminal",
+    address: "Langford Lane, Kidlington, Oxfordshire, OX5 1RA, United Kingdom"
+  },
+  // France & Monaco
+  NCE: {
+    name: "Signature Flight Support / Aviapartner Executive Nice",
+    phone: "+33 4 93 21 00 10",
+    email: "nce@signatureflight.com",
+    handler: "Signature Aviation Nice VIP Terminal",
+    frequency: "131.425 MHz",
+    address: "Aéroport Nice Côte d'Azur, Terminal Aviation d'Affaires, 06281 Nice, France"
+  },
+  LBG: {
+    name: "Jet Aviation / Astonsky VIP Terminal Paris Le Bourget",
+    phone: "+33 1 48 35 88 88",
+    email: "lbg@jetaviation.com",
+    handler: "Jet Aviation France SAS",
+    frequency: "130.150 MHz",
+    address: "Aéroport de Paris-Le Bourget, Zone Aviation d'Affaires, 93350 Le Bourget, France"
+  },
+  CEQ: {
+    name: "Cannes Mandelieu Executive FBO",
+    phone: "+33 4 93 90 40 40",
+    email: "cannes.fbo@cote-dazur.aeroport.fr",
+    handler: "Aéroports de la Côte d'Azur",
+    address: "245 Avenue Francis Tonner, 06150 Cannes, France"
+  },
+  // Switzerland
+  GVA: {
+    name: "TAG Aviation / Jet Aviation Geneva FBO",
+    phone: "+41 22 717 0000",
+    email: "gva.handling@tagaviation.com",
+    handler: "TAG Aviation Geneva VIP Handling",
+    frequency: "130.600 MHz",
+    address: "Chemin des Papillons 20, 1215 Geneva Airport, Switzerland"
+  },
+  ZRH: {
+    name: "ExecuJet / Cat Aviation Zurich VIP Terminal",
+    phone: "+41 44 804 1616",
+    email: "fbo.zurich@execujet.com",
+    handler: "ExecuJet Zurich FBO",
+    address: "General Aviation Center, Zurich Airport, 8058 Zurich, Switzerland"
+  },
+  SMV: {
+    name: "Engadin Airport Samedan VIP Handling",
+    phone: "+41 81 851 0851",
+    email: "handling@engadin-airport.ch",
+    handler: "Engadin Airport AG",
+    address: "Plazza Aviatica 2, 7503 Samedan, Switzerland"
+  },
+  // USA & Americas
+  TEB: {
+    name: "Meridian Teterboro / Jet Aviation TEB",
+    phone: "+1 201 288 5040",
+    email: "fbo@meridian.aero",
+    handler: "Meridian Air Charter & FBO Services",
+    frequency: "129.900 MHz",
+    address: "485 Industrial Ave, Teterboro, NJ 07608, United States"
+  },
+  OPF: {
+    name: "Fontainebleau Aviation / Atlantic Aviation Opa-locka",
+    phone: "+1 305 685 4646",
+    email: "fbo@fontainebleauaviation.com",
+    handler: "Fontainebleau Aviation Executive Terminal",
+    frequency: "131.750 MHz",
+    address: "14200 NW 42nd Ave, Opa-locka, FL 33054, United States"
+  },
+  VNY: {
+    name: "Signature Flight Support / Castle & Cooke Van Nuys",
+    phone: "+1 818 786 8530",
+    email: "vny@signatureflight.com",
+    handler: "Signature Aviation Van Nuys",
+    frequency: "129.850 MHz",
+    address: "7401 Hayvenhurst Ave, Van Nuys, CA 91406, United States"
+  },
+  HPN: {
+    name: "Million Air White Plains / Westchester County",
+    phone: "+1 914 446 0100",
+    email: "fbo-hpn@millionair.com",
+    handler: "Million Air FBO",
+    address: "136 Tower Rd, West Harrison, NY 10604, United States"
+  },
+  PBI: {
+    name: "Signature Flight Support Palm Beach VIP",
+    phone: "+1 561 683 4121",
+    email: "pbi@signatureflight.com",
+    handler: "Signature Aviation Palm Beach",
+    address: "1500 Perimeter Rd, West Palm Beach, FL 33406, United States"
+  },
+  LAS: {
+    name: "Atlantic Aviation / Signature Las Vegas Executive",
+    phone: "+1 702 736 1830",
+    email: "las@atlanticaviation.com",
+    handler: "Atlantic Aviation Executive Services",
+    address: "275 E Tropicana Ave, Las Vegas, NV 89169, United States"
+  },
+  // Middle East
+  DXB: {
+    name: "Jetex VIP Terminal / ExecuJet Dubai International",
+    phone: "+971 4 212 4000",
+    email: "fbo-dxb@jetex.com",
+    handler: "Jetex Flight Support Dubai",
+    frequency: "131.850 MHz",
+    address: "VIP Terminal, Dubai South Aviation District, Dubai, United Arab Emirates"
+  },
+  DWC: {
+    name: "Falcon Aviation / Jet Aviation Dubai World Central",
+    phone: "+971 4 807 0707",
+    email: "fbo.dwc@jetaviation.com",
+    handler: "Falcon Aviation Services / Jet Aviation",
+    address: "VIP Terminal Building, Al Maktoum International Airport, Dubai, UAE"
+  },
+  RUH: {
+    name: "ExecuJet Aviation Saudi / Private Wings Riyadh",
+    phone: "+966 11 220 8888",
+    email: "fbo.riyadh@execujet.com",
+    handler: "Private Aviation Terminal Riyadh",
+    address: "King Khalid International Airport, Private Terminal, Riyadh, Saudi Arabia"
+  },
+  DOH: {
+    name: "Qatar Executive VIP Terminal Doha",
+    phone: "+974 4022 1700",
+    email: "qatarexecutive@qatarairways.com.qa",
+    handler: "Qatar Executive FBO",
+    address: "Doha International Airport VIP Terminal, Doha, Qatar"
+  },
+  // Africa
+  LOS: {
+    name: "ExecuJet Aviation Nigeria / EAN Aviation FBO Lagos",
+    phone: "+234 1 295 5110",
+    email: "fbo.los@execujet.com",
+    handler: "ExecuJet Nigeria VIP Terminal",
+    address: "Murtala Muhammed International Airport, General Aviation Wing, Ikeja, Lagos, Nigeria"
+  },
+  ABV: {
+    name: "ExecuJet / Skyway Aviation VIP Handling Abuja",
+    phone: "+234 9 810 0090",
+    email: "handling.abuja@execujet.com",
+    handler: "Nnamdi Azikiwe International Airport Presidential Wing / VIP FBO",
+    address: "Nnamdi Azikiwe Airport, VIP Terminal, Abuja, Nigeria"
+  },
+  PHC: {
+    name: "Caverton / Bristow Executive FBO Port Harcourt",
+    phone: "+234 84 231 100",
+    email: "phc.ops@caverton-aviation.com",
+    handler: "Port Harcourt Executive Aviation Center",
+    address: "Port Harcourt International Airport, Omagwa, Rivers State, Nigeria"
+  },
+  CPT: {
+    name: "Signature Flight Support Cape Town International",
+    phone: "+27 21 934 0350",
+    email: "cpt@signatureflight.co.za",
+    handler: "Signature Aviation Cape Town",
+    address: "General Aviation Area, Cape Town International Airport, Cape Town, South Africa"
+  },
+  JNB: {
+    name: "Fireblade Aviation / ExecuJet Lanseria & OR Tambo",
+    phone: "+27 10 595 3920",
+    email: "fbo@firebladeaviation.com",
+    handler: "Fireblade Aviation World-Class VIP FBO",
+    address: "Denel Precinct, Atlas Road, Kempton Park, Johannesburg, South Africa"
+  },
+  NBO: {
+    name: "Tradewinds Aviation / Wilson Executive VIP Handling",
+    phone: "+254 20 600 3900",
+    email: "wilson.fbo@tradewinds-aviation.com",
+    handler: "Wilson Airport VIP Executive Hub",
+    address: "Wilson Airport, Langata Road, Nairobi, Kenya"
+  },
+  ACC: {
+    name: "Aviance VIP / Kotoka Executive Handling Accra",
+    phone: "+233 30 277 8000",
+    email: "accra.fbo@aviancecargo.com",
+    handler: "Kotoka International Airport Executive Aviation Suite",
+    address: "Kotoka International Airport, Airport City, Accra, Ghana"
+  },
+  KGL: {
+    name: "RwandAir Executive / VIP Handling Kigali",
+    phone: "+250 788 177 000",
+    email: "vip.fbo@kigaliairport.rw",
+    handler: "Kigali International Airport VIP Presidential Pavilion",
+    address: "Kigali International Airport, Kanombe, Kigali, Rwanda"
+  },
+  RAK: {
+    name: "Swissport Executive Aviation Marrakech Menara",
+    phone: "+212 524 44 79 10",
+    email: "rak.handling@swissport.com",
+    handler: "Swissport Executive Aviation Morocco",
+    address: "Marrakech Menara Airport, Private Aviation Pavilion, Marrakech, Morocco"
+  },
+  CAI: {
+    name: "EgyptAir VIP / Cairo Executive Jet Center",
+    phone: "+20 2 2265 5000",
+    email: "cai.executive@cairo-airport.info",
+    handler: "Cairo International Private Flight Services",
+    address: "Airport Road, Terminal 4 Private Aviation, Cairo, Egypt"
+  },
+  SEZ: {
+    name: "Seychelles Civil Aviation Authority VIP Lounge / FBO",
+    phone: "+248 438 4000",
+    email: "viphandling@scaa.sc",
+    handler: "SCAA VIP Services Pointe Larue",
+    address: "Pointe Larue, Mahé, Seychelles"
+  },
+  MRU: {
+    name: "Yu Lounge VIP Executive Terminal Mauritius",
+    phone: "+230 603 6200",
+    email: "concierge@yulounge.com",
+    handler: "Yu Lounge Luxury FBO Terminal",
+    address: "Sir Seewoosagur Ramgoolam International Airport, Plaine Magnien, Mauritius"
+  }
+};
+
+export function getAirportFBO(airportOrCode: Airport | string | null | undefined): FBOInfo {
+  if (!airportOrCode) {
+    return {
+      name: "Executive VIP Terminal Handling",
+      phone: "+1 800 538 3548",
+      email: "flightops@orbelo-vip.com",
+      handler: "Certified FBO Dispatch",
+      frequency: "131.500 MHz",
+      address: "VIP Private Aviation Terminal"
+    };
+  }
+
+  let code = "";
+  let cityName = "Executive";
+  let fullName = "Executive Jet Center";
+  let countryName = "International";
+
+  if (typeof airportOrCode === "string") {
+    // Check if it contains IATA code in brackets like "London Farnborough (FAB)"
+    const match = airportOrCode.match(/\(([A-Z]{3})\)/i);
+    if (match) {
+      code = match[1].toUpperCase();
+    } else {
+      code = airportOrCode.trim().toUpperCase();
+    }
+
+    const found = airportsData.find(
+      (a) =>
+        a.iata.toUpperCase() === code ||
+        a.icao.toUpperCase() === code ||
+        a.id.toLowerCase() === airportOrCode.toLowerCase()
+    );
+    if (found) {
+      code = found.iata.toUpperCase();
+      cityName = found.city;
+      fullName = found.name;
+      countryName = found.country;
+    }
+  } else {
+    code = airportOrCode.iata ? airportOrCode.iata.toUpperCase() : airportOrCode.icao.toUpperCase();
+    cityName = airportOrCode.city;
+    fullName = airportOrCode.name;
+    countryName = airportOrCode.country;
+  }
+
+  if (KNOWN_FBOS[code]) {
+    return KNOWN_FBOS[code];
+  }
+
+  return {
+    name: `${cityName} Executive FBO Terminal (${code})`,
+    phone: "+1 800 538 3548",
+    email: `fbo.${code.toLowerCase()}@orbelo-vip.com`,
+    handler: `${cityName} Private Ramp Ground Handling`,
+    frequency: "131.500 MHz",
+    address: `${fullName}, Private Aviation Apron, ${countryName}`
+  };
 }

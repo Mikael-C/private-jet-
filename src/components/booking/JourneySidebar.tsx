@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { Headphones, ArrowRight, ExternalLink } from "lucide-react";
+import { Headphones, ArrowRight, MessageCircle } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
 import { fleetData, Aircraft } from "@/data/fleet";
 
@@ -131,21 +131,21 @@ export default function JourneySidebar() {
             <div className="flex justify-between items-center text-xs text-[#555555]">
               <span>Aircraft charter ({selectedAircraft.name})</span>
               <span className="font-medium text-[#0F1420]">
-                £{charterPrice.toLocaleString()}
+                ${charterPrice.toLocaleString()}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-xs text-[#555555]">
-              <span>Airport & handling</span>
+              <span>Airport &amp; handling</span>
               <span className="font-medium text-[#0F1420]">
-                £{handlingFee.toLocaleString()}
+                ${handlingFee.toLocaleString()}
               </span>
             </div>
 
             <div className="flex justify-between items-center text-xs text-[#555555]">
-              <span>Taxes & charges</span>
+              <span>Taxes &amp; charges</span>
               <span className="font-medium text-[#0F1420]">
-                £{taxesFee.toLocaleString()}
+                ${taxesFee.toLocaleString()}
               </span>
             </div>
 
@@ -158,7 +158,7 @@ export default function JourneySidebar() {
                   + {service.name}
                 </span>
                 <span className="font-medium text-[#0F1420]">
-                  {service.price > 0 ? `£${service.price.toLocaleString()}` : "Tailored quote"}
+                  {service.price > 0 ? `Estimated $${service.price.toLocaleString()}` : "Included"}
                 </span>
               </div>
             ))}
@@ -171,22 +171,29 @@ export default function JourneySidebar() {
                 Journey total
               </span>
               <span className="text-[11px] text-[#888888]">
-                All taxes & fees included
+                All taxes &amp; fees included
               </span>
             </div>
             <div className="text-right">
               <span className="font-display text-2xl font-bold text-[#0F1420]">
-                £{journeyTotal.toLocaleString()}
+                ${journeyTotal.toLocaleString()}
               </span>
-              <span className="text-[11px] text-[#555555] block">GBP</span>
+              <span className="text-[11px] text-[#555555] block">USD</span>
             </div>
           </div>
         </div>
 
         {/* Dark Navy Concierge Card */}
-        <div className="bg-[#0F1420] text-white rounded-2xl p-6 border border-[#0F1420]">
+        <div
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new Event("open-concierge-chat"));
+            }
+          }}
+          className="bg-[#0F1420] text-white rounded-2xl p-6 border border-[#0F1420] hover:border-[#C9A052]/60 transition-all cursor-pointer group shadow-sm"
+        >
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-full bg-[#C9A052]/20 flex items-center justify-center flex-shrink-0 text-[#C9A052]">
+            <div className="w-10 h-10 rounded-full bg-[#C9A052]/20 flex items-center justify-center flex-shrink-0 text-[#C9A052] group-hover:bg-[#C9A052]/30 transition-colors">
               <Headphones className="w-5 h-5" />
             </div>
             <div className="space-y-1">
@@ -202,16 +209,14 @@ export default function JourneySidebar() {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-white/10">
-            <a
-              href="https://wa.me/447010452726"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C9A052] hover:text-[#E8D5A3] transition-colors"
-            >
+          <div className="mt-4 pt-4 border-t border-white/10 flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#C9A052] group-hover:text-[#E8D5A3] transition-colors">
               <span>Speak to your concierge</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <MessageCircle className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+            </span>
+            <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">
+              Live Chat
+            </span>
           </div>
         </div>
       </div>

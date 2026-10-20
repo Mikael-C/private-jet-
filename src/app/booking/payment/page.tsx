@@ -70,7 +70,7 @@ export default function BookingQuotationPage() {
             aircraftName: selectedAircraft.name,
             aircraftCategory: selectedAircraft.categoryLabel,
             services: addedServicesList,
-            total: `£${totalEstimate.toLocaleString()}`,
+            total: `$${totalEstimate.toLocaleString()} USD`,
           },
         },
       })
@@ -185,10 +185,21 @@ export default function BookingQuotationPage() {
                 </div>
                 <div className="text-right">
                   <span className="font-display text-3xl font-bold text-[#0F1420] block">
-                    £{totalEstimate.toLocaleString()}
+                    ${totalEstimate.toLocaleString()}
                   </span>
-                  <span className="text-xs font-semibold text-[#C9A052]">GBP</span>
+                  <span className="text-xs font-semibold text-[#C9A052]">USD</span>
                 </div>
+              </div>
+
+              {/* Concierge fee transparency note */}
+              <div className="p-4 rounded-xl bg-white/80 border border-[#E8E5DF] text-xs text-[#555555] space-y-1">
+                <div className="flex items-center justify-between font-semibold text-[#0F1420]">
+                  <span>Dedicated Concierge Connection Fee:</span>
+                  <span className="text-[#C9A052] font-bold text-sm">$500 USD</span>
+                </div>
+                <p className="text-[11px] text-gray-500">
+                  A standard $500 flight concierge assignment fee assigns an executive flight officer to your quote and is 100% credited toward your final charter invoice.
+                </p>
               </div>
 
               {/* CTA Button */}
@@ -207,7 +218,7 @@ export default function BookingQuotationPage() {
 
               <div className="flex items-center justify-center gap-2 text-xs text-[#888888]">
                 <Lock className="w-3.5 h-3.5" />
-                <span>Zero automated card charges · Dedicated concierge handoff</span>
+                <span>Secure concierge handoff · $500 fee credited toward your flight</span>
               </div>
             </div>
 

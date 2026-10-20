@@ -66,40 +66,84 @@ export interface BookingState {
 const defaultServices: ServiceItem[] = [
   {
     id: "signature-catering",
-    name: "Signature catering",
+    name: "Signature bespoke catering",
     description:
-      "A seasonal menu, fresh fruit and a considered drinks selection, prepared for your party.",
+      "Gourmet dining crafted to your culinary requests, fine wines, and artisanal refreshments.",
     price: 480,
-    priceLabel: "£480 · £120 per passenger",
+    priceLabel: "Estimated $480 · Approx. $120 per guest",
     added: false,
-    details: { menuPreference: "", dietaryRequirements: "" },
+    details: {
+      menuPreference: "seasonal-gourmet",
+      customPreferences: "",
+      dietaryRequirements: "",
+    },
   },
   {
     id: "chauffeured-arrival",
-    name: "Chauffeured arrival",
+    name: "Chauffeured tarmac transfer",
     description:
-      "A private executive vehicle from the arrival airport to your destination. One seamless arrival for all guests.",
+      "Private executive chauffeur vehicle to or from your aircraft steps directly to your final address.",
     price: 320,
-    priceLabel: "£320 · One-way arrival transfer",
+    priceLabel: "Estimated $320 · Direct tarmac pickup",
     added: false,
-    details: { destination: "", pickupTime: "" },
+    details: {
+      pickupAddress: "",
+      destinationAddress: "",
+      vehiclePreference: "Mercedes-Benz S-Class",
+      pickupTime: "",
+    },
   },
   {
     id: "floral-arrangement",
-    name: "Onboard floral arrangement",
+    name: "Onboard floral styling",
     description:
-      "A discreet seasonal arrangement to welcome you onboard, chosen in a soft, neutral palette.",
+      "Curated fresh floral arrangements to elevate your cabin atmosphere for business or celebration.",
     price: 180,
-    priceLabel: "£180 · Per flight",
+    priceLabel: "Estimated $180 · Curated arrangement",
     added: false,
+    details: {
+      floralOption: "Fresh White Phalaenopsis Orchids",
+      occasion: "Executive Welcome",
+    },
+  },
+  {
+    id: "pets-on-board",
+    name: "Pets on board",
+    description:
+      "Fly with your pets alongside you in the cabin. Includes dedicated pet cabin setup and handling.",
+    price: 250,
+    priceLabel: "Estimated $250 · Cabin pet preparation",
+    added: false,
+    details: {
+      petType: "Dog",
+      petBreed: "",
+      petWeight: "",
+      hasPassportAndDocuments: "false",
+    },
+  },
+  {
+    id: "weapons-on-board",
+    name: "Firearms & weapons declaration",
+    description:
+      "Mandatory legal declaration for licensed sporting, hunting, or personal security firearms.",
+    price: 0,
+    priceLabel: "Official declaration · Advance manifest verification",
+    added: false,
+    details: {
+      weaponType: "Sporting Shotgun",
+      quantity: "1",
+      licenseNumber: "",
+      issuingAuthority: "",
+      procedureAcknowledged: "false",
+    },
   },
   {
     id: "concierge-requests",
     name: "Personal concierge requests",
     description:
-      "Travelling with a pet, celebrating an occasion or arranging something special? Share your request with us.",
+      "Celebrating an occasion, helicopter link, or arranging bespoke amenities? Share your vision.",
     price: 0,
-    priceLabel: "Tailored quote · No charge added now",
+    priceLabel: "Tailored quote · Handled by flight officer",
     added: false,
     details: { request: "" },
   },
@@ -187,16 +231,27 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem(STORAGE_KEY);
   };
 
-  // Aircraft base prices (per charter, not per hour)
+  // Aircraft and Category base charter prices (USD $)
   const aircraftPrices: Record<string, number> = {
-    "citation-cj3-plus": 14200,
-    "phenom-300e": 16500,
-    "learjet-75-liberty": 18000,
-    "praetor-600": 20500,
-    "challenger-350": 24000,
-    "gulfstream-g550": 35000,
-    "gulfstream-g650er": 42000,
-    "global-7500": 55000,
+    // Jet Size Categories
+    "turboprop": 8500,
+    "piston": 5200,
+    "entry-level-jet": 11500,
+    "super-light-jet": 15800,
+    "midsize-jet": 21000,
+    "super-midsize-jet": 28500,
+    "heavy-jet": 39000,
+    "ultra-long-range": 58000,
+    "vip-airliner": 95000,
+    // Individual Models
+    "citation-cj3-plus": 11500,
+    "phenom-300e": 15800,
+    "learjet-75-liberty": 16500,
+    "praetor-600": 28500,
+    "challenger-350": 24500,
+    "gulfstream-g550": 45000,
+    "gulfstream-g650er": 62000,
+    "global-7500": 59000,
   };
 
   const basePrice = booking.selectedAircraftId

@@ -173,15 +173,18 @@ export default function FlightSearch() {
               <p>
                 Explore charter options. Your concierge will confirm aircraft, availability and a tailored quote.
               </p>
-              <a
-                href="https://wa.me/447010452726"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link-arrow font-medium text-[#0F1420] hover:text-gold transition-colors whitespace-nowrap"
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new Event("open-concierge-chat"));
+                  }
+                }}
+                className="link-arrow font-medium text-[#0F1420] hover:text-[#C9A052] transition-colors whitespace-nowrap cursor-pointer inline-flex items-center gap-1.5"
               >
                 <span>Prefer a personal touch? Speak to us</span>
-                <ArrowUpRight className="w-3.5 h-3.5 text-gold" />
-              </a>
+                <ArrowUpRight className="w-3.5 h-3.5 text-[#C9A052]" />
+              </button>
             </div>
           </form>
         </div>

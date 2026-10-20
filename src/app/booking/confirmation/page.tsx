@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
 import { fleetData, Aircraft } from "@/data/fleet";
+import { getAirportFBO } from "@/data/airports";
 import JourneySidebar from "@/components/booking/JourneySidebar";
 
 export default function BookingConfirmationPage() {
@@ -66,6 +67,8 @@ export default function BookingConfirmationPage() {
   };
 
   const arrTime = calcArrivalTime(depTime);
+  const depFBO = getAirportFBO(fromCity);
+  const arrFBO = getAirportFBO(toCity);
 
   // Trigger Print / Download Itinerary
   const handleDownloadItinerary = () => {
@@ -183,15 +186,36 @@ export default function BookingConfirmationPage() {
                 <span>Add to calendar</span>
               </button>
 
-              <a
-                href={`https://wa.me/447010452726?text=Hello%2C%20regarding%20booking%20reference%20${ref}%2C%20I%20have%20an%20inquiry.`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-body font-medium text-xs border border-[#25D366] text-emerald-800 bg-[#25D366]/10 hover:bg-[#25D366] hover:text-white transition-all"
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(
+                      new CustomEvent("open-concierge-chat", {
+                        detail: {
+                          bookingSummary: {
+                            reference: ref,
+                            routeFrom: fromCity,
+                            routeTo: toCity,
+                            depDate: booking.departureDate || "18 Oct 2026",
+                            depTime: booking.departureTime || "10:00",
+                            tripType: booking.tripType === "round-trip" ? "Round Trip" : "One Way",
+                            passengers: booking.passengers || 2,
+                            aircraftName: selectedAircraft.name,
+                            aircraftCategory: selectedAircraft.categoryLabel,
+                            services: "Dedicated Concierge Handoff",
+                            total: `$${totalPaid.toLocaleString()} USD`,
+                          },
+                        },
+                      })
+                    );
+                  }
+                }}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-body font-medium text-xs border border-[#C9A052] text-[#0F1420] bg-[#C9A052]/10 hover:bg-[#C9A052] hover:text-[#0F1420] transition-all cursor-pointer"
               >
-                <MessageCircle className="w-4 h-4" />
+                <MessageCircle className="w-4 h-4 text-[#C9A052]" />
                 <span>Contact concierge</span>
-              </a>
+              </button>
             </div>
 
             {/* CARD 1: [From] to [To] Card */}
@@ -276,79 +300,145 @@ export default function BookingConfirmationPage() {
               </div>
             </div>
 
-            {/* CARD 2: Your passengers & personal touches */}
+            {/* CARD 2: Lead Passenger & Personal Touches */}
             <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="pb-4 border-b border-[#E8E5DF]">
-                <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                  Your passengers &amp; personal touches
-                </h3>
+              <div className="pb-4 border-b border-[#E8E5DF] flex items-center justify-between">
+                <div>
+                  <h3 className="font-display text-xl font-bold text-[#0F1420]">
+                    Lead Passenger &amp; Personal Touches
+                  </h3>
+                  <p className="text-xs text-gray-500">Charter party of {booking.passengers} guests</p>
+                </div>
+                <span className="text-xs font-semibold px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full border border-emerald-200">
+                  Manifest Registered
+                </span>
               </div>
 
-              {/* Passengers list */}
-              <div>
-                <span className="text-xs uppercase font-bold tracking-wider text-[#0F1420] block mb-3">
-                  Manifest Passengers ({booking.passengers} Total)
+              {/* Lead Passenger Info Card */}
+              <div className="p-4 rounded-2xl border border-gray-200 bg-[#F5F2EC]/60 space-y-2 text-xs">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#C9A052] block">
+                  Lead Traveler Details
                 </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {booking.passengerList && booking.passengerList.length > 0 ? (
-                    booking.passengerList.map((pax, index) => (
-                      <div
-                        key={pax.id || index}
-                        className="p-3.5 rounded-xl border border-gray-100 bg-gray-50 flex items-center gap-3 text-xs"
-                      >
-                        <div className="w-8 h-8 rounded-full bg-[#0F1420] text-white flex items-center justify-center font-bold text-[11px] flex-shrink-0">
-                          {index + 1}
-                        </div>
-                        <div>
-                          <span className="font-semibold text-[#0F1420] block">
-                            {pax.fullName || `${firstName} (Passenger ${index + 1})`}
-                          </span>
-                          <span className="text-[11px] text-[#888888]">
-                            {pax.nationality} · {pax.type === "lead" ? "Lead Traveler" : "Guest"}
-                          </span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50 flex items-center gap-3 text-xs col-span-2">
-                      <div className="w-8 h-8 rounded-full bg-[#0F1420] text-white flex items-center justify-center font-bold text-[11px]">
-                        1
-                      </div>
-                      <div>
-                        <span className="font-semibold text-[#0F1420] block">
-                          {firstName} {booking.bookingContact.lastName}
-                        </span>
-                        <span className="text-[11px] text-[#888888]">
-                          Lead Passenger · Primary Charter Client
-                        </span>
-                      </div>
-                    </div>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Full Name</span>
+                    <span className="font-bold text-[#0F1420] text-sm">
+                      {booking.passengerList?.[0]?.fullName || `${firstName} ${booking.bookingContact.lastName}`.trim() || "Lead Passenger"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Contact</span>
+                    <span className="font-medium text-[#0F1420]">
+                      {booking.bookingContact.email || "Confidential"}<br />
+                      {booking.bookingContact.phone || "WhatsApp on file"}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-gray-400 block text-[11px]">Nationality / Manifest</span>
+                    <span className="font-medium text-[#0F1420]">
+                      {booking.passengerList?.[0]?.nationality || "Registered"}<br />
+                      {booking.passengers > 1 ? `+ ${booking.passengers - 1} Accompanying Guests` : "Sole Traveler"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* FBO Terminals with Phone and Email */}
+              <div className="pt-2 border-t border-gray-100">
+                <span className="text-xs uppercase font-bold tracking-wider text-[#0F1420] block mb-3">
+                  Designated VIP Terminal Handling (FBOs)
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-body">
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-[#C9A052] block">
+                      Departure VIP FBO
+                    </span>
+                    <p className="font-bold text-[#0F1420] text-sm">{depFBO.name}</p>
+                    <p className="text-gray-500 text-[11px]">{depFBO.address}</p>
+                    <p className="text-gray-700 pt-1">
+                      <span className="font-semibold text-[#0F1420]">Direct Tel:</span>{" "}
+                      <a href={`tel:${depFBO.phone}`} className="text-[#C9A052] font-semibold hover:underline">
+                        {depFBO.phone}
+                      </a>
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-semibold text-[#0F1420]">Email:</span>{" "}
+                      <a href={`mailto:${depFBO.email}`} className="text-[#C9A052] font-semibold hover:underline">
+                        {depFBO.email}
+                      </a>
+                    </p>
+                  </div>
+
+                  <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+                    <span className="text-[10px] font-bold uppercase text-[#C9A052] block">
+                      Arrival VIP FBO
+                    </span>
+                    <p className="font-bold text-[#0F1420] text-sm">{arrFBO.name}</p>
+                    <p className="text-gray-500 text-[11px]">{arrFBO.address}</p>
+                    <p className="text-gray-700 pt-1">
+                      <span className="font-semibold text-[#0F1420]">Direct Tel:</span>{" "}
+                      <a href={`tel:${arrFBO.phone}`} className="text-[#C9A052] font-semibold hover:underline">
+                        {arrFBO.phone}
+                      </a>
+                    </p>
+                    <p className="text-gray-700">
+                      <span className="font-semibold text-[#0F1420]">Email:</span>{" "}
+                      <a href={`mailto:${arrFBO.email}`} className="text-[#C9A052] font-semibold hover:underline">
+                        {arrFBO.email}
+                      </a>
+                    </p>
+                  </div>
                 </div>
               </div>
 
               {/* Selected Services */}
               <div className="pt-2 border-t border-gray-100">
                 <span className="text-xs uppercase font-bold tracking-wider text-[#0F1420] block mb-3">
-                  Arranged In-Flight Touches
+                  Arranged In-Flight Touches &amp; Services
                 </span>
                 {addedServices.length > 0 ? (
                   <div className="space-y-2.5">
                     {addedServices.map((s) => (
                       <div
                         key={s.id}
-                        className="p-3 rounded-xl border border-gray-100 bg-[#F5F2EC]/40 flex items-center justify-between text-xs"
+                        className="p-3.5 rounded-xl border border-gray-100 bg-[#F5F2EC]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
                       >
-                        <div>
+                        <div className="space-y-0.5">
                           <span className="font-semibold text-[#0F1420] block">
                             {s.name}
                           </span>
                           <span className="text-[11px] text-[#555555]">
                             {s.description}
                           </span>
+                          {/* Show custom details if available */}
+                          {s.details?.customPreferences && (
+                            <p className="text-[11px] text-[#C9A052] font-medium pt-0.5">
+                              Custom Catering: {s.details.customPreferences}
+                            </p>
+                          )}
+                          {s.details?.destinationAddress && (
+                            <p className="text-[11px] text-[#C9A052] font-medium pt-0.5">
+                              Chauffeur to: {s.details.destinationAddress}
+                            </p>
+                          )}
+                          {s.details?.floralOption && (
+                            <p className="text-[11px] text-[#C9A052] font-medium pt-0.5">
+                              Floral: {s.details.floralOption}
+                            </p>
+                          )}
+                          {s.details?.petType && (
+                            <p className="text-[11px] text-[#C9A052] font-medium pt-0.5">
+                              Pet: {s.details.petType} {s.details.petBreed ? `(${s.details.petBreed})` : ""} · Weight: {s.details.petWeight || "Standard"} · Passport Verified
+                            </p>
+                          )}
+                          {s.details?.weaponType && (
+                            <p className="text-[11px] text-[#C9A052] font-medium pt-0.5">
+                              Firearms Declaration: {s.details.weaponType} · Permit: {s.details.licenseNumber || "On file"}
+                            </p>
+                          )}
                         </div>
-                        <span className="font-bold text-[#0F1420] flex-shrink-0 ml-4">
-                          {s.price > 0 ? `£${s.price.toLocaleString()}` : "Included"}
+                        <span className="font-bold text-[#0F1420] flex-shrink-0">
+                          {s.price > 0 ? `Estimated $${s.price.toLocaleString()} USD` : "Included / Declared"}
                         </span>
                       </div>
                     ))}
@@ -448,7 +538,7 @@ export default function BookingConfirmationPage() {
                 <div className="flex justify-between">
                   <span>Authorized Total:</span>
                   <span className="font-bold text-sm text-[#0F1420]">
-                    £{totalPaid.toLocaleString()} GBP
+                    ${totalPaid.toLocaleString()} USD
                   </span>
                 </div>
               </div>

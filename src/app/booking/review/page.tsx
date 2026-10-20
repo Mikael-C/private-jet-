@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
 import { fleetData, Aircraft } from "@/data/fleet";
+import { getAirportFBO } from "@/data/airports";
 import JourneySidebar from "@/components/booking/JourneySidebar";
 
 export default function TripReviewPage() {
@@ -55,6 +56,8 @@ export default function TripReviewPage() {
   };
 
   const arrTime = calcArrivalTime(depTime);
+  const depFBO = getAirportFBO(fromCity);
+  const arrFBO = getAirportFBO(toCity);
 
   const handleContinue = () => {
     if (!reviewed) return;
@@ -160,17 +163,20 @@ export default function TripReviewPage() {
               </div>
             </div>
 
-            {/* CARD 2: Your selected aircraft */}
+            {/* CARD 2: Your selected aircraft category */}
             <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm">
               <div className="flex items-center justify-between pb-5 border-b border-[#E8E5DF]">
-                <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                  Your selected aircraft
-                </h3>
+                <div>
+                  <h3 className="font-display text-xl font-bold text-[#0F1420]">
+                    Selected Jet Category
+                  </h3>
+                  <span className="text-xs text-gray-500">Chartered by category size</span>
+                </div>
                 <Link
                   href="/booking/results"
                   className="text-xs font-semibold text-[#C9A052] hover:text-[#9A7A35] flex items-center gap-1 underline transition-colors"
                 >
-                  <span>Change aircraft</span>
+                  <span>Change category</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </Link>
               </div>
@@ -182,15 +188,23 @@ export default function TripReviewPage() {
                     alt={selectedAircraft.name}
                     className="w-full h-full object-cover"
                   />
+                  <div className="absolute top-2.5 left-2.5 bg-[#0F1420]/80 backdrop-blur-sm px-2.5 py-0.5 rounded-full">
+                    <span className="text-[10px] font-bold text-[#C9A052] uppercase">
+                      {selectedAircraft.categoryLabel}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="space-y-2 flex-1">
-                  <span className="text-[11px] uppercase tracking-wider font-semibold text-[#C9A052]">
-                    {selectedAircraft.categoryLabel}
-                  </span>
                   <h4 className="font-display text-2xl font-bold text-[#0F1420]">
                     {selectedAircraft.name}
                   </h4>
+                  {selectedAircraft.typicalAircraft && (
+                    <p className="text-xs font-medium text-[#0F1420]">
+                      <span className="text-gray-400">Typical aircraft in category:</span>{" "}
+                      {selectedAircraft.typicalAircraft.join(" · ")}
+                    </p>
+                  )}
                   <p className="text-xs text-[#555555] font-body leading-relaxed">
                     {selectedAircraft.description}
                   </p>
@@ -200,46 +214,79 @@ export default function TripReviewPage() {
                     <span>·</span>
                     <span>Range: {selectedAircraft.rangeLabel}</span>
                     <span>·</span>
-                    <span>Cabin height: {selectedAircraft.cabinHeight}</span>
+                    <span>Speed: {selectedAircraft.cruiseSpeed}</span>
                   </div>
+                </div>
+              </div>
+
+              {/* FBO Terminals Row */}
+              <div className="pt-5 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-body">
+                <div className="p-3.5 rounded-xl bg-[#F5F2EC] border border-[#E8E5DF] space-y-1">
+                  <span className="text-[10px] font-bold uppercase text-[#C9A052] tracking-wider block">
+                    Departure VIP FBO Terminal
+                  </span>
+                  <p className="font-bold text-[#0F1420]">{depFBO.name}</p>
+                  <p className="text-gray-600">
+                    Tel: <a href={`tel:${depFBO.phone}`} className="text-[#C9A052] hover:underline font-semibold">{depFBO.phone}</a>
+                  </p>
+                  <p className="text-gray-600">
+                    Email: <a href={`mailto:${depFBO.email}`} className="text-[#C9A052] hover:underline font-semibold">{depFBO.email}</a>
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[#F5F2EC] border border-[#E8E5DF] space-y-1">
+                  <span className="text-[10px] font-bold uppercase text-[#C9A052] tracking-wider block">
+                    Arrival VIP FBO Terminal
+                  </span>
+                  <p className="font-bold text-[#0F1420]">{arrFBO.name}</p>
+                  <p className="text-gray-600">
+                    Tel: <a href={`tel:${arrFBO.phone}`} className="text-[#C9A052] hover:underline font-semibold">{arrFBO.phone}</a>
+                  </p>
+                  <p className="text-gray-600">
+                    Email: <a href={`mailto:${arrFBO.email}`} className="text-[#C9A052] hover:underline font-semibold">{arrFBO.email}</a>
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* CARD 3: Before you continue */}
+            {/* CARD 3: Before you continue & Cancellation Terms */}
             <div className="bg-[#F5F2EC]/60 rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 space-y-5">
               <div className="flex items-center gap-2 pb-3 border-b border-[#E8E5DF]">
                 <FileCheck className="w-5 h-5 text-[#C9A052]" />
                 <h3 className="font-display text-lg font-bold text-[#0F1420]">
-                  Before you continue
+                  Charter Conditions &amp; Cancellation Policy
                 </h3>
               </div>
 
               <div className="space-y-4 text-xs text-[#555555] font-body leading-relaxed">
                 <div>
                   <h5 className="font-semibold text-[#0F1420] mb-0.5">
-                    Included in your quote:
+                    Inclusions in your charter quote:
                   </h5>
                   <p>
-                    Entire aircraft charter, dedicated 2-pilot flight crew, standard artisan refreshments and bar, airport handling, private ramp fees, and all applicable taxes shown.
+                    Exclusive category aircraft charter, dual-pilot flight crew, VIP terminal private ramp handling, artisan bar &amp; refreshments, and all aviation navigation taxes.
                   </p>
                 </div>
 
                 <div>
                   <h5 className="font-semibold text-[#0F1420] mb-0.5">
-                    Changes & cancellation:
+                    Updated Cancellation &amp; Refund Policy:
                   </h5>
                   <p>
-                    Free cancellation before 7 days; 50% thereafter; 100% within 48 hours. Final operator terms apply.
+                    • <strong>7+ Days Prior:</strong> 100% full charter refund (less $500 concierge connection fee).<br />
+                    • <strong>72 Hours to 7 Days:</strong> 80% refund or 100% credit toward rescheduled charter within 12 months.<br />
+                    • <strong>24 to 72 Hours:</strong> 50% charter refund.<br />
+                    • <strong>Under 24 Hours:</strong> Non-refundable once aircraft positioning commences.<br />
+                    • <strong>Weather / Mechanical Guarantee:</strong> Immediate substitute category aircraft or 100% full refund with zero fees.
                   </p>
                 </div>
 
                 <div>
                   <h5 className="font-semibold text-[#0F1420] mb-0.5">
-                    Aircraft confirmation:
+                    Aircraft &amp; Flight Manifest Confirmation:
                   </h5>
                   <p>
-                    Your concierge will confirm the assigned aircraft, tail registration number, and operating captain details prior to departure.
+                    Your dedicated flight concierge will confirm the specific tail number within this category, operating air carrier certificate, and crew manifest prior to boarding.
                   </p>
                 </div>
               </div>
@@ -254,7 +301,7 @@ export default function TripReviewPage() {
                     className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
                   />
                   <span className="text-xs text-[#0F1420] font-medium leading-relaxed group-hover:text-[#C9A052] transition-colors">
-                    I have reviewed the itinerary and the illustrative charter conditions.
+                    I have reviewed the flight itinerary, FBO terminal locations, and cancellation terms.
                   </span>
                 </label>
               </div>
@@ -267,7 +314,7 @@ export default function TripReviewPage() {
                 className="btn-outline-dark text-xs px-6 py-3 w-full sm:w-auto flex items-center justify-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>Back to aircraft</span>
+                <span>Back to category details</span>
               </Link>
 
               <button

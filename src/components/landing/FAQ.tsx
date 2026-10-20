@@ -7,27 +7,32 @@ const faqs = [
   {
     question: "How much does a private jet charter cost?",
     answer:
-      "Your quote depends on the route, aircraft, travel dates and your requirements. Send us your itinerary for a tailored proposal with clear inclusions before you confirm.",
+      "All charter quotes are calculated in USD ($). Pricing depends on your selected aircraft category, flight hours, and itinerary. For example, regional turboprops start from ~$5,000–$8,500, super light jets from ~$15,800, and long-range flagships from ~$58,000.",
   },
   {
-    question: "How far in advance should I book?",
+    question: "What is your cancellation and refund policy?",
     answer:
-      "We recommend 2–4 weeks for most charters. For peak periods or popular routes, earlier is better. We can also arrange short-notice charters with as little as 4–24 hours notice for available aircraft.",
+      "Our updated policy provides complete peace of mind: 100% full charter refund for cancellations 7+ days prior to departure (less the initial $500 flight concierge connection fee); 80% refund (or 100% flight credit) between 72 hours and 7 days; 50% refund between 24 and 72 hours. If a flight is affected by severe weather or technical maintenance, an immediate substitute category aircraft is provided or a 100% full refund is issued.",
   },
   {
-    question: "Can I travel with pets or special luggage?",
+    question: "Can I bring pets on board?",
     answer:
-      "Yes. Many operators welcome pets with advance notice. We will confirm pet policies, secure appropriate aircraft and ensure a comfortable experience for all passengers — including four-legged ones.",
+      "Yes! Pets travel in luxury directly alongside you inside the cabin — never in cargo. You simply need to verify that your pet has an up-to-date International Pet Passport, ISO microchip, rabies vaccination, and a veterinary fit-to-fly certificate.",
   },
   {
-    question: "Can you arrange ground transfers?",
+    question: "Can I travel with sporting firearms or weapons?",
     answer:
-      "Yes. We coordinate chauffeured arrivals, helicopter transfers and private terminals. Every detail of your journey, from door to door, can be considered and arranged by your concierge.",
+      "Yes, licensed sporting, hunting, and security firearms are permitted. They must be declared at least 24–48 hours prior to flight departure, completely unloaded in locked hard-sided airline cases, with ammunition locked separately (max 5kg/11lbs per IATA regulations). Licenses and permits are verified by FBO security and the Captain.",
+  },
+  {
+    question: "What is a Fixed-Base Operator (FBO)?",
+    answer:
+      "An FBO is a dedicated private aviation terminal. Instead of crowded commercial terminals, you arrive at a private executive lounge with dedicated security, private lounges, and direct tarmac vehicle access to your aircraft steps just 15 minutes before departure.",
   },
   {
     question: "What is included in the charter price?",
     answer:
-      "The charter price includes the aircraft, crew, standard refreshments and airport handling fees. Catering, ground transfers and special services are optional additions, itemised before you confirm.",
+      "The charter quote covers the entire aircraft in your selected category, dual Captains, VIP terminal handling, navigation fees, and complimentary onboard bar and Wi-Fi. Bespoke catering, ground chauffeurs, and special floral arrangements are optional additions itemized in USD.",
   },
 ];
 
@@ -57,15 +62,18 @@ export default function FAQ() {
             </p>
 
             <div>
-              <a
-                href="https://wa.me/447010452726"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="link-arrow font-semibold text-[#0F1420] hover:text-gold transition-colors inline-flex items-center gap-2 group"
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.dispatchEvent(new Event("open-concierge-chat"));
+                  }
+                }}
+                className="link-arrow font-semibold text-[#0F1420] hover:text-[#C9A052] transition-colors inline-flex items-center gap-2 group cursor-pointer"
               >
                 <span>Speak to a charter specialist</span>
-                <ArrowUpRight className="w-4 h-4 text-gold transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
+                <ArrowUpRight className="w-4 h-4 text-[#C9A052] transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </button>
             </div>
           </div>
 

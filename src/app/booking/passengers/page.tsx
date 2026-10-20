@@ -14,15 +14,15 @@ import {
   Calendar,
   Globe,
   Sparkles,
-  Plus,
-  Trash2,
+  ShieldCheck,
+  Check,
 } from "lucide-react";
 import { useBooking, PassengerInfo } from "@/lib/bookingContext";
 import JourneySidebar from "@/components/booking/JourneySidebar";
 
 const nationalitiesList = [
-  "United Kingdom",
   "United States",
+  "United Kingdom",
   "France",
   "Switzerland",
   "United Arab Emirates",
@@ -35,6 +35,10 @@ const nationalitiesList = [
   "Australia",
   "Saudi Arabia",
   "Qatar",
+  "Nigeria",
+  "South Africa",
+  "Kenya",
+  "Ghana",
   "Other",
 ];
 
@@ -42,7 +46,7 @@ export default function PassengerInformationPage() {
   const router = useRouter();
   const { booking, updateBooking } = useBooking();
 
-  // Booking Contact State
+  // Lead Passenger State
   const [firstName, setFirstName] = useState(
     booking.bookingContact.firstName || ""
   );
@@ -51,7 +55,13 @@ export default function PassengerInformationPage() {
   );
   const [email, setEmail] = useState(booking.bookingContact.email || "");
   const [phone, setPhone] = useState(booking.bookingContact.phone || "");
-  const [isLeadPassenger, setIsLeadPassenger] = useState(true);
+  const [dateOfBirth, setDateOfBirth] = useState(
+    booking.passengerList?.[0]?.dateOfBirth || ""
+  );
+  const [nationality, setNationality] = useState(
+    booking.passengerList?.[0]?.nationality || "United States"
+  );
+  const [passportNumber, setPassportNumber] = useState("");
 
   // Special Requests
   const [specialRequests, setSpecialRequests] = useState(
@@ -64,77 +74,19 @@ export default function PassengerInformationPage() {
   );
 
   // Passenger Count from booking
-  const passengerCount = Math.max(1, booking.passengers || 2);
-
-  // Initialize Passenger List
-  const [passengers, setPassengers] = useState<PassengerInfo[]>(() => {
-    if (booking.passengerList && booking.passengerList.length > 0) {
-      return booking.passengerList;
-    }
-    const initialList: PassengerInfo[] = [];
-    for (let i = 0; i < passengerCount; i++) {
-      initialList.push({
-        id: `pax-${i + 1}`,
-        fullName:
-          i === 0 && isLeadPassenger && (firstName || lastName)
-            ? `${firstName} ${lastName}`.trim()
-            : "",
-        dateOfBirth: "",
-        nationality: "United Kingdom",
-        type: i === 0 ? "lead" : "adult",
-      });
-    }
-    return initialList;
-  });
-
-  // Sync lead passenger name if checkbox is checked
-  useEffect(() => {
-    if (isLeadPassenger) {
-      setPassengers((prev) => {
-        const copy = [...prev];
-        if (copy[0]) {
-          copy[0] = {
-            ...copy[0],
-            fullName: `${firstName} ${lastName}`.trim(),
-          };
-        }
-        return copy;
-      });
-    }
-  }, [firstName, lastName, isLeadPassenger]);
-
-  // Adjust passenger list length if booking.passengers differs
-  useEffect(() => {
-    if (passengers.length < passengerCount) {
-      const extra: PassengerInfo[] = [];
-      for (let i = passengers.length; i < passengerCount; i++) {
-        extra.push({
-          id: `pax-${i + 1}`,
-          fullName: "",
-          dateOfBirth: "",
-          nationality: "United Kingdom",
-          type: "adult",
-        });
-      }
-      setPassengers((prev) => [...prev, ...extra]);
-    }
-  }, [passengerCount]);
-
-  const updatePassengerField = (
-    index: number,
-    field: keyof PassengerInfo,
-    val: string
-  ) => {
-    setPassengers((prev) => {
-      const next = [...prev];
-      next[index] = { ...next[index], [field]: val };
-      return next;
-    });
-  };
+  const totalPassengers = Math.max(1, booking.passengers || 2);
 
   const handleContinue = (e: React.FormEvent) => {
     e.preventDefault();
     if (!consentGiven) return;
+
+    const leadPassenger: PassengerInfo = {
+      id: "pax-lead",
+      fullName: `${firstName} ${lastName}`.trim(),
+      dateOfBirth,
+      nationality,
+      type: "lead",
+    };
 
     updateBooking({
       bookingContact: {
@@ -143,7 +95,7 @@ export default function PassengerInformationPage() {
         email,
         phone,
       },
-      passengerList: passengers,
+      passengerList: [leadPassenger],
       specialRequests,
       passengerConsentGiven: consentGiven,
     });
@@ -157,38 +109,42 @@ export default function PassengerInformationPage() {
         {/* Header Section */}
         <div className="mb-8">
           <span className="section-label">
-            — A PERSONAL JOURNEY
+            — PRIMARY TRAVELER
           </span>
           <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#0F1420] tracking-tight">
-            Who&apos;s coming along?
+            Lead passenger information.
           </h1>
           <p className="text-sm sm:text-base text-[#555555] font-body mt-2 max-w-2xl">
-            Tell us who&apos;s traveling and how to reach you. We&apos;ll take care of the details from here.
+            Please provide details for the lead passenger. Additional passenger manifest details can be submitted anytime to your concierge prior to departure.
           </p>
         </div>
 
-        {/* 2 Columns: LEFT Forms (60%) + RIGHT JourneySidebar (40%) */}
+        {/* 2 Columns: LEFT Form (60%) + RIGHT JourneySidebar (40%) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* LEFT CONTENT (7 cols / 60%) */}
+          {/* LEFT CONTENT */}
           <form
             onSubmit={handleContinue}
             className="lg:col-span-7 xl:col-span-8 space-y-8"
           >
-            {/* CARD 1: Booking contact */}
+            {/* CARD 1: Lead Passenger & Primary Contact */}
             <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="pb-4 border-b border-[#E8E5DF]">
+              <div className="pb-4 border-b border-[#E8E5DF] flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-[#F5F2EC] flex items-center justify-center text-[#C9A052]">
                     <User className="w-4 h-4" />
                   </div>
                   <div>
                     <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                      Booking contact
+                      Lead Passenger
                     </h3>
                     <p className="text-xs text-[#555555]">
-                      Primary recipient for itinerary documents, permits and charter updates.
+                      Primary traveler & flight charter contact.
                     </p>
                   </div>
+                </div>
+                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F2EC] text-xs font-semibold text-[#0F1420]">
+                  <Users className="w-3.5 h-3.5 text-[#C9A052]" />
+                  <span>{totalPassengers} {totalPassengers === 1 ? "Guest" : "Guests"} Total</span>
                 </div>
               </div>
 
@@ -203,7 +159,7 @@ export default function PassengerInformationPage() {
                     required
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="e.g. Lord Alexander"
+                    placeholder="e.g. Alexander"
                     className="input-field"
                   />
                 </div>
@@ -216,13 +172,13 @@ export default function PassengerInformationPage() {
                     required
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="e.g. Kensington"
+                    placeholder="e.g. Vance"
                     className="input-field"
                   />
                 </div>
               </div>
 
-              {/* Email & Phone row */}
+              {/* Contact info row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
@@ -237,7 +193,7 @@ export default function PassengerInformationPage() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="alexander@familyoffice.co.uk"
+                      placeholder="alexander@familyoffice.com"
                       className="input-field pl-10"
                     />
                   </div>
@@ -255,185 +211,126 @@ export default function PassengerInformationPage() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+44 7911 123456"
+                      placeholder="+1 (555) 234-5678"
                       className="input-field pl-10"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Lead Passenger Checkbox */}
-              <div className="pt-2">
-                <label className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={isLeadPassenger}
-                    onChange={(e) => setIsLeadPassenger(e.target.checked)}
-                    className="h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
-                  />
-                  <span className="text-xs font-medium text-[#0F1420] group-hover:text-[#C9A052] transition-colors">
-                    The booking contact is also the lead passenger
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* CARD 2: Passenger information */}
-            <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-6">
-              <div className="pb-4 border-b border-[#E8E5DF]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                      Passenger information
-                    </h3>
-                    <p className="text-xs text-[#555555] mt-0.5">
-                      {passengers.length} {passengers.length === 1 ? "adult" : "adults"} · Please enter each traveler&apos;s name exactly as it appears on their passport.
-                    </p>
+              {/* Passport & Nationality row */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-100">
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Nationality
+                  </label>
+                  <div className="relative">
+                    <select
+                      value={nationality}
+                      onChange={(e) => setNationality(e.target.value)}
+                      className="input-field text-xs py-2.5 cursor-pointer"
+                    >
+                      {nationalitiesList.map((nat) => (
+                        <option key={nat} value={nat}>
+                          {nat}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <span className="text-xs font-bold text-[#C9A052] bg-[#F5F2EC] px-3 py-1 rounded-full">
-                    {passengers.length} of {booking.passengers}
-                  </span>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Date of Birth
+                  </label>
+                  <input
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={(e) => setDateOfBirth(e.target.value)}
+                    className="input-field text-xs py-2.5"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#0F1420] uppercase tracking-wider mb-1.5">
+                    Passport Number (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={passportNumber}
+                    onChange={(e) => setPassportNumber(e.target.value)}
+                    placeholder="Enter or share later"
+                    className="input-field text-xs py-2.5"
+                  />
                 </div>
               </div>
 
-              {/* Passenger Forms */}
-              <div className="space-y-6">
-                {passengers.map((pax, index) => {
-                  const isLead = index === 0;
-                  return (
-                    <div
-                      key={pax.id}
-                      className="p-5 rounded-2xl border border-gray-100 bg-[#F5F2EC]/40 space-y-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-wider text-[#0F1420]">
-                          Passenger {index + 1} {isLead && "· Lead Passenger"}
-                        </span>
-                        <span className="text-[11px] text-[#888888]">
-                          {isLead ? "Main Traveler" : "Guest"}
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        {/* Full Name */}
-                        <div>
-                          <label className="block text-[11px] font-semibold text-[#0F1420] uppercase tracking-wider mb-1">
-                            Full Name (as on passport)
-                          </label>
-                          <input
-                            type="text"
-                            required
-                            value={pax.fullName}
-                            onChange={(e) =>
-                              updatePassengerField(
-                                index,
-                                "fullName",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Full Legal Name"
-                            className="input-field text-xs py-2.5"
-                          />
-                        </div>
-
-                        {/* Date of Birth */}
-                        <div>
-                          <label className="block text-[11px] font-semibold text-[#0F1420] uppercase tracking-wider mb-1">
-                            Date of Birth
-                          </label>
-                          <input
-                            type="date"
-                            value={pax.dateOfBirth}
-                            onChange={(e) =>
-                              updatePassengerField(
-                                index,
-                                "dateOfBirth",
-                                e.target.value
-                              )
-                            }
-                            className="input-field text-xs py-2.5"
-                          />
-                        </div>
-
-                        {/* Nationality */}
-                        <div>
-                          <label className="block text-[11px] font-semibold text-[#0F1420] uppercase tracking-wider mb-1">
-                            Nationality
-                          </label>
-                          <select
-                            value={pax.nationality}
-                            onChange={(e) =>
-                              updatePassengerField(
-                                index,
-                                "nationality",
-                                e.target.value
-                              )
-                            }
-                            className="input-field text-xs py-2.5 cursor-pointer"
-                          >
-                            {nationalitiesList.map((nat) => (
-                              <option key={nat} value={nat}>
-                                {nat}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Companion notice badge */}
+              {totalPassengers > 1 && (
+                <div className="p-4 rounded-2xl bg-[#F5F2EC] border border-[#E8E5DF] flex items-start gap-3 text-xs text-[#555555]">
+                  <Users className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
+                  <p className="leading-relaxed">
+                    <strong className="text-[#0F1420]">
+                      Traveling with {totalPassengers - 1} accompanying guest{totalPassengers - 1 > 1 ? "s" : ""}:
+                    </strong>{" "}
+                    Only the lead passenger is required to submit details now. Names and passport documents for your remaining guests can be communicated directly to your flight concierge anytime prior to departure.
+                  </p>
+                </div>
+              )}
 
               {/* Privacy Note */}
               <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3 text-xs text-[#555555]">
                 <Lock className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
                 <p className="leading-relaxed">
                   <strong className="text-[#0F1420]">
-                    Travel documents, handled discreetly.
+                    Travel documents, handled with discretion.
                   </strong>{" "}
-                  Passport details are collected through an encrypted document request after confirmation. No sensitive scans are stored on open servers.
+                  All identity information is stored via encrypted aviation channels. No paperwork or customs queues at the VIP terminal.
                 </p>
               </div>
             </div>
 
-            {/* CARD 3: Anything we should know? */}
+            {/* CARD 2: Special In-Flight Requests */}
             <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-4">
-              <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                Anything we should know?
-              </h3>
-              <p className="text-xs text-[#555555]">
-                Dietary preferences, celebrating an anniversary, pets traveling onboard, or special medical arrangements.
-              </p>
-              <textarea
-                rows={3}
-                value={specialRequests}
-                onChange={(e) => setSpecialRequests(e.target.value)}
-                placeholder="Share any special preferences or notes with your flight operations team..."
-                className="input-field resize-none"
-              />
+              <div>
+                <h3 className="font-display text-xl font-bold text-[#0F1420]">
+                  Special requests &amp; preferences
+                </h3>
+                <p className="text-xs text-[#555555] mt-0.5">
+                  Traveling for an anniversary, celebration, confidential mission, or medical need? Let us know.
+                </p>
+              </div>
+
+              <div>
+                <textarea
+                  rows={3}
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  placeholder="e.g. Traveling with infant car seat, celebrating client closing, require ramp tarmac privacy…"
+                  className="input-field resize-none text-xs"
+                />
+              </div>
             </div>
 
-            {/* Consent Checkbox */}
-            <div className="bg-[#F5F2EC]/60 rounded-2xl p-5 border border-[#E8E5DF]">
+            {/* CARD 3: Discretion & Consent */}
+            <div className="bg-white rounded-3xl border border-[#E8E5DF] p-6 sm:p-8 shadow-sm space-y-4">
               <label className="flex items-start gap-3 cursor-pointer group">
                 <input
                   type="checkbox"
                   required
                   checked={consentGiven}
                   onChange={(e) => setConsentGiven(e.target.checked)}
-                  className="mt-0.5 h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
+                  className="mt-1 h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
                 />
-                <span className="text-xs text-[#0F1420] font-medium leading-relaxed group-hover:text-[#C9A052] transition-colors">
-                  I have permission to share the passenger details above for this booking.
+                <span className="text-xs text-[#555555] font-body leading-relaxed group-hover:text-[#0F1420] transition-colors">
+                  I confirm that I am the lead passenger or authorized representative. I consent to Orbelo and vetted charter operators handling traveler details strictly for flight manifest clearance and security authorization.
                 </span>
               </label>
             </div>
 
-            {/* Bottom Actions Row */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Bottom Actions */}
+            <div className="flex items-center justify-between pt-4">
               <Link
                 href="/booking/review"
-                className="btn-outline-dark text-xs px-6 py-3 w-full sm:w-auto flex items-center justify-center gap-2"
+                className="btn-outline-dark text-xs px-6 py-3.5 flex items-center gap-2"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back to review</span>
@@ -441,14 +338,10 @@ export default function PassengerInformationPage() {
 
               <button
                 type="submit"
-                disabled={!consentGiven}
-                className={`btn-primary text-xs px-8 py-3.5 w-full sm:w-auto flex items-center justify-center gap-2 shadow-md transition-all ${
-                  !consentGiven
-                    ? "opacity-40 cursor-not-allowed hover:transform-none hover:shadow-none"
-                    : "hover:shadow-lg"
-                }`}
+                disabled={!consentGiven || !firstName || !lastName || !email || !phone}
+                className="btn-gold px-8 py-3.5 text-xs font-bold flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:shadow-lg transition-all"
               >
-                <span>Continue to services</span>
+                <span>Continue to additional services</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
             </div>

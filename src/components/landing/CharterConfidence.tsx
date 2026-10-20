@@ -4,9 +4,9 @@ import { CheckCircle2, ArrowUpRight } from "lucide-react";
 export default function CharterConfidence() {
   const checklist = [
     {
-      title: "Know your operator",
+      title: "Know your air carrier",
       description:
-        "Understand who operates your flight, the aircraft selected and the details of your itinerary.",
+        "Understand the certified AOC operator of your flight, the aircraft category selected and the details of your itinerary.",
     },
     {
       title: "Clarity, before you commit",

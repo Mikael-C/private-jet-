@@ -78,7 +78,7 @@ export default function AircraftDetailPage() {
             className="inline-flex items-center gap-2 text-xs uppercase tracking-wider font-semibold text-gray-600 hover:text-[#0F1420] mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-[#C9A052]" />
-            Back to fleet
+            Back to aircraft categories
           </Link>
 
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
@@ -479,33 +479,44 @@ export default function AircraftDetailPage() {
                 <div className="p-6 rounded-2xl bg-[#F5F2EC] border border-[#E8E5DF]">
                   <div className="flex items-center gap-2 mb-4 text-[#0F1420]">
                     <Shield className="w-5 h-5 text-[#C9A052]" />
-                    <h4 className="font-display text-lg font-bold">Cancellation policy</h4>
+                    <h4 className="font-display text-lg font-bold">Updated cancellation policy</h4>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="p-4 rounded-xl bg-white border border-gray-200">
-                      <span className="text-xs uppercase font-semibold text-emerald-600 block mb-1">
-                        More than 7 days
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
+                    <div className="p-3.5 rounded-xl bg-white border border-gray-200">
+                      <span className="text-[11px] uppercase font-bold text-emerald-600 block mb-1">
+                        7+ days prior
                       </span>
-                      <p className="text-sm font-bold text-[#0F1420] mb-1">Full refund</p>
-                      <p className="text-xs text-gray-500">Free cancellation with 100% refund of charter fees.</p>
+                      <p className="text-sm font-bold text-[#0F1420] mb-0.5">100% Refund</p>
+                      <p className="text-gray-500 text-[11px]">Full refund of charter fee (less $500 concierge connection fee).</p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-white border border-gray-200">
-                      <span className="text-xs uppercase font-semibold text-amber-600 block mb-1">
-                        3 to 7 days before
+                    <div className="p-3.5 rounded-xl bg-white border border-gray-200">
+                      <span className="text-[11px] uppercase font-bold text-blue-600 block mb-1">
+                        72h to 7 days
                       </span>
-                      <p className="text-sm font-bold text-[#0F1420] mb-1">50% charter fee</p>
-                      <p className="text-xs text-gray-500">50% refund or credit applied to rescheduled itinerary.</p>
+                      <p className="text-sm font-bold text-[#0F1420] mb-0.5">80% Refund</p>
+                      <p className="text-gray-500 text-[11px]">80% refund or 100% credit applied to rescheduled flight within 12 months.</p>
                     </div>
 
-                    <div className="p-4 rounded-xl bg-white border border-gray-200">
-                      <span className="text-xs uppercase font-semibold text-rose-600 block mb-1">
-                        Under 48 hours
+                    <div className="p-3.5 rounded-xl bg-white border border-gray-200">
+                      <span className="text-[11px] uppercase font-bold text-amber-600 block mb-1">
+                        24h to 72 hours
                       </span>
-                      <p className="text-sm font-bold text-[#0F1420] mb-1">100% charter fee</p>
-                      <p className="text-xs text-gray-500">Full charter fee applies due to aircraft positioning costs.</p>
+                      <p className="text-sm font-bold text-[#0F1420] mb-0.5">50% Refund</p>
+                      <p className="text-gray-500 text-[11px]">50% refund or balance retained for slot and crew repositioning charges.</p>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-white border border-gray-200">
+                      <span className="text-[11px] uppercase font-bold text-rose-600 block mb-1">
+                        Under 24 hours
+                      </span>
+                      <p className="text-sm font-bold text-[#0F1420] mb-0.5">Non-refundable</p>
+                      <p className="text-gray-500 text-[11px]">Full fee applies once aircraft positioning has commenced.</p>
                     </div>
                   </div>
+                  <p className="text-[11px] text-gray-500 mt-3 pt-3 border-t border-gray-200">
+                    <strong>Weather &amp; Technical Guarantee:</strong> If a scheduled flight cannot operate due to ATC or weather, an equivalent category aircraft is immediately dispatched, or 100% refund is issued with zero fees.
+                  </p>
                 </div>
               </div>
             )}
@@ -524,7 +535,7 @@ export default function AircraftDetailPage() {
                     {aircraft.name}
                   </h3>
                   <p className="text-xs text-gray-500 mt-1">
-                    Operated by certified EASA/FAA AOC operators
+                    Certified EASA / FAA Part 135 air carrier standards
                   </p>
                 </div>
 
@@ -535,9 +546,9 @@ export default function AircraftDetailPage() {
                       Your illustrative price
                     </span>
                     <div className="font-display text-3xl font-bold text-[#0F1420]">
-                      £{aircraft.pricePerHour.toLocaleString()}
+                      ${aircraft.pricePerHour.toLocaleString()}
                       <span className="font-body text-xs font-normal text-gray-500 ml-2">
-                        per hour
+                        USD / hour
                       </span>
                     </div>
                   </div>
@@ -549,7 +560,7 @@ export default function AircraftDetailPage() {
                     </span>
                     <div className="flex items-center justify-between">
                       <span className="font-display text-xl font-bold text-[#0F1420]">
-                        £{aircraft.illustrativeTrip.price.toLocaleString()}
+                        ${aircraft.illustrativeTrip.price.toLocaleString()} USD
                       </span>
                       <span className="text-xs text-gray-500 font-body">
                         ~{aircraft.illustrativeTrip.duration}
@@ -566,17 +577,20 @@ export default function AircraftDetailPage() {
                   Book this aircraft
                 </button>
 
-                {/* WhatsApp Concierge link */}
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-outline-dark w-full justify-center text-xs py-3 group"
+                {/* Concierge link */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new Event("open-concierge-chat"));
+                    }
+                  }}
+                  className="btn-outline-dark w-full justify-center text-xs py-3 group cursor-pointer"
                 >
-                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  <MessageCircle className="w-4 h-4 text-[#C9A052]" />
                   <span>Speak to a concierge</span>
                   <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
+                </button>
               </div>
 
               {/* Dark Card: Questions */}
@@ -594,15 +608,18 @@ export default function AircraftDetailPage() {
                     </p>
                   </div>
                 </div>
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-full text-xs font-semibold bg-[#C9A052] text-[#0F1420] hover:bg-[#b8912e] transition-colors mt-2"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.dispatchEvent(new Event("open-concierge-chat"));
+                    }
+                  }}
+                  className="inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-full text-xs font-semibold bg-[#C9A052] text-[#0F1420] hover:bg-[#b8912e] transition-colors mt-2 cursor-pointer"
                 >
-                  <span>Chat on WhatsApp</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </a>
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Speak with Concierge</span>
+                </button>
               </div>
             </div>
           </div>

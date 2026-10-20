@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
 import { fleetData, Aircraft } from "@/data/fleet";
+import { getAirportFBO } from "@/data/airports";
 import JourneySidebar from "@/components/booking/JourneySidebar";
 
 export default function AircraftDetailsPage() {
@@ -80,6 +81,8 @@ export default function AircraftDetailsPage() {
   };
 
   const arrTime = calcArrivalTime(depTime);
+  const depFBO = getAirportFBO(fromCity);
+  const arrFBO = getAirportFBO(toCity);
 
   return (
     <div className="w-full bg-white pb-24">
@@ -91,7 +94,7 @@ export default function AircraftDetailsPage() {
             className="inline-flex items-center gap-2 text-xs font-semibold text-[#0F1420] hover:text-[#C9A052] transition-colors"
           >
             <ArrowLeft className="w-4 h-4 text-[#C9A052]" />
-            <span>Back to aircraft results</span>
+            <span>Back to aircraft categories</span>
           </Link>
           <span className="text-xs uppercase tracking-widest font-semibold text-[#C9A052]">
             {aircraft.categoryLabel}
@@ -442,40 +445,109 @@ export default function AircraftDetailsPage() {
               </div>
             )}
 
-            {/* TAB 3: CHARTER TERMS */}
+            {/* TAB 3: CHARTER TERMS & FBOS */}
             {activeTab === "terms" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl border border-[#E8E5DF] p-6 sm:p-8 space-y-6">
                   <div>
                     <h3 className="font-display text-xl font-bold text-[#0F1420] mb-2">
-                      Transparent charter conditions
+                      Transparent Charter Conditions
                     </h3>
                     <p className="text-sm text-[#555555] font-body">
-                      SKYVANTAGE operates with guaranteed transparency. Here is what is covered under this charter booking.
+                      Every charter adheres to vetted AOC safety certifications and guaranteed operational transparency.
                     </p>
+                  </div>
+
+                  {/* Fixed Base Operators (FBO) Details */}
+                  <div className="space-y-4 pb-6 border-b border-gray-100">
+                    <div className="flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-[#C9A052]" />
+                      <h4 className="font-semibold text-xs uppercase tracking-wider text-[#0F1420]">
+                        Assigned Fixed-Base Operators (VIP Terminals)
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-body">
+                      {/* Departure FBO */}
+                      <div className="p-4 rounded-xl bg-[#F5F2EC] border border-[#E8E5DF] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#0F1420] text-xs">Departure FBO</span>
+                          <span className="text-[10px] font-bold text-[#C9A052] uppercase">Private Ramp</span>
+                        </div>
+                        <p className="font-semibold text-[#0F1420] text-sm">{depFBO.name}</p>
+                        <p className="text-gray-500 text-[11px]">{depFBO.address}</p>
+                        <div className="pt-2 border-t border-[#E8E5DF] space-y-1 text-gray-700">
+                          <div>
+                            <span className="font-medium text-[#0F1420]">Direct Tel:</span>{" "}
+                            <a href={`tel:${depFBO.phone}`} className="text-[#C9A052] font-semibold hover:underline">
+                              {depFBO.phone}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="font-medium text-[#0F1420]">Operations Email:</span>{" "}
+                            <a href={`mailto:${depFBO.email}`} className="text-[#C9A052] font-semibold hover:underline">
+                              {depFBO.email}
+                            </a>
+                          </div>
+                          {depFBO.frequency && (
+                            <div>
+                              <span className="font-medium text-[#0F1420]">VHF Frequency:</span> {depFBO.frequency}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Arrival FBO */}
+                      <div className="p-4 rounded-xl bg-[#F5F2EC] border border-[#E8E5DF] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="font-bold text-[#0F1420] text-xs">Arrival FBO</span>
+                          <span className="text-[10px] font-bold text-[#C9A052] uppercase">VIP Handling</span>
+                        </div>
+                        <p className="font-semibold text-[#0F1420] text-sm">{arrFBO.name}</p>
+                        <p className="text-gray-500 text-[11px]">{arrFBO.address}</p>
+                        <div className="pt-2 border-t border-[#E8E5DF] space-y-1 text-gray-700">
+                          <div>
+                            <span className="font-medium text-[#0F1420]">Direct Tel:</span>{" "}
+                            <a href={`tel:${arrFBO.phone}`} className="text-[#C9A052] font-semibold hover:underline">
+                              {arrFBO.phone}
+                            </a>
+                          </div>
+                          <div>
+                            <span className="font-medium text-[#0F1420]">Operations Email:</span>{" "}
+                            <a href={`mailto:${arrFBO.email}`} className="text-[#C9A052] font-semibold hover:underline">
+                              {arrFBO.email}
+                            </a>
+                          </div>
+                          {arrFBO.frequency && (
+                            <div>
+                              <span className="font-medium text-[#0F1420]">VHF Frequency:</span> {arrFBO.frequency}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* What is included */}
                   <div className="space-y-3 pb-6 border-b border-gray-100">
                     <h4 className="font-semibold text-xs uppercase tracking-wider text-[#0F1420]">
-                      What is included in your quote:
+                      What is included in your charter:
                     </h4>
                     <ul className="space-y-2 text-xs text-[#555555]">
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
-                        <span>Exclusive charter of the entire aircraft with assigned flight crew (2 Captains).</span>
+                        <span>Exclusive charter of the entire aircraft in this category with 2 type-rated Captains.</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
-                        <span>Complimentary high-speed satellite Wi-Fi and executive bar service.</span>
+                        <span>High-speed onboard connectivity and premium bar/refreshment service.</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
-                        <span>VIP terminal lounge access at departure and arrival private FBOs.</span>
+                        <span>VIP private lounge terminal access with discrete tarmac vehicle boarding.</span>
                       </li>
                       <li className="flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#C9A052] flex-shrink-0 mt-0.5" />
-                        <span>All aviation taxes, landing fees, ramp handling, and passenger security fees.</span>
+                        <span>All aviation landing fees, navigation charges, passenger fees, and local airport taxes.</span>
                       </li>
                     </ul>
                   </div>
@@ -483,33 +555,44 @@ export default function AircraftDetailsPage() {
                   {/* Cancellation Policy */}
                   <div className="space-y-3">
                     <h4 className="font-semibold text-xs uppercase tracking-wider text-[#0F1420]">
-                      Cancellation & Changes Policy
+                      Updated Cancellation &amp; Changes Policy
                     </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
                       <div className="p-3.5 bg-emerald-50 border border-emerald-100 rounded-xl">
                         <span className="font-bold text-emerald-900 block mb-1">
                           7+ Days Prior
                         </span>
-                        <p className="text-emerald-700">
-                          100% full refund with zero cancellation penalty.
+                        <p className="text-emerald-700 leading-snug">
+                          100% full charter refund (less $500 flight concierge connection fee).
+                        </p>
+                      </div>
+                      <div className="p-3.5 bg-blue-50 border border-blue-100 rounded-xl">
+                        <span className="font-bold text-blue-900 block mb-1">
+                          72h to 7 Days
+                        </span>
+                        <p className="text-blue-700 leading-snug">
+                          80% refund or 100% credit toward rescheduled charter within 12 months.
                         </p>
                       </div>
                       <div className="p-3.5 bg-amber-50 border border-amber-100 rounded-xl">
                         <span className="font-bold text-amber-900 block mb-1">
-                          2 to 7 Days
+                          24h to 72 Hours
                         </span>
-                        <p className="text-amber-700">
-                          50% charter fee applied, balance refunded immediately.
+                        <p className="text-amber-700 leading-snug">
+                          50% charter refund. Balance released immediately.
                         </p>
                       </div>
                       <div className="p-3.5 bg-rose-50 border border-rose-100 rounded-xl">
                         <span className="font-bold text-rose-900 block mb-1">
-                          Under 48 Hours
+                          Under 24 Hours
                         </span>
-                        <p className="text-rose-700">
-                          100% charter fee applies once aircraft is positioned.
+                        <p className="text-rose-700 leading-snug">
+                          Non-refundable once aircraft has repositioned or crew has mobilized.
                         </p>
                       </div>
+                    </div>
+                    <div className="p-3 bg-gray-50 rounded-xl border border-gray-200 text-[11px] text-gray-600">
+                      <strong>Guaranteed Weather &amp; Mechanical Protection:</strong> If your flight cannot operate safely due to severe weather or mechanical maintenance, we immediately deploy a substitute category aircraft or issue a 100% full refund with zero fees.
                     </div>
                   </div>
                 </div>
@@ -521,14 +604,14 @@ export default function AircraftDetailsPage() {
           <div className="lg:col-span-5 xl:col-span-4 space-y-4">
             <JourneySidebar />
 
-            {/* Select This Aircraft Button */}
+            {/* Select This Category Button */}
             <div className="bg-white rounded-2xl border border-[#E8E5DF] p-5 shadow-sm space-y-3">
               <button
                 type="button"
                 onClick={handleSelectAircraft}
                 className="btn-gold w-full py-4 text-sm font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
               >
-                <span>Select this aircraft</span>
+                <span>Select this category</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
               <p className="text-[11px] text-center text-[#888888]">

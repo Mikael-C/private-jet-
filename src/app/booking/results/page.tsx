@@ -12,22 +12,23 @@ import {
   Users,
   Compass,
   Sparkles,
-  ArrowUpDown,
   Plane,
   ChevronDown,
+  Luggage,
 } from "lucide-react";
 import { useBooking } from "@/lib/bookingContext";
-import { fleetData, Aircraft } from "@/data/fleet";
+import { jetCategoriesData, Aircraft } from "@/data/fleet";
 
-const aircraftPrices: Record<string, number> = {
-  "citation-cj3-plus": 14200,
-  "phenom-300e": 16500,
-  "learjet-75-liberty": 18000,
-  "praetor-600": 20500,
-  "challenger-350": 24000,
-  "gulfstream-g550": 35000,
-  "gulfstream-g650er": 42000,
-  "global-7500": 55000,
+const categoryPrices: Record<string, number> = {
+  turboprop: 8500,
+  piston: 5200,
+  "entry-level-jet": 11500,
+  "super-light-jet": 15800,
+  "midsize-jet": 21000,
+  "super-midsize-jet": 28500,
+  "heavy-jet": 39000,
+  "ultra-long-range": 58000,
+  "vip-airliner": 95000,
 };
 
 export default function BookingResultsPage() {
@@ -36,7 +37,7 @@ export default function BookingResultsPage() {
 
   // Filters State
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [maxBudget, setMaxBudget] = useState<number>(60000);
+  const [maxBudget, setMaxBudget] = useState<number>(100000);
   const [cabinPreferences, setCabinPreferences] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<
     "recommended" | "price-asc" | "price-desc" | "range"
@@ -45,6 +46,7 @@ export default function BookingResultsPage() {
   // Comparison State
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
+  const [categoryViewMap, setCategoryViewMap] = useState<Record<string, "exterior" | "interior">>({});
 
   // Summary labels from booking context
   const routeFrom = booking.from || "London Farnborough (FAB)";
@@ -69,7 +71,7 @@ export default function BookingResultsPage() {
   // Reset Filters
   const resetFilters = () => {
     setSelectedCategories([]);
-    setMaxBudget(60000);
+    setMaxBudget(100000);
     setCabinPreferences([]);
     setSortBy("recommended");
   };
@@ -81,55 +83,37 @@ export default function BookingResultsPage() {
     );
   };
 
-  // Filter & Sort Logic
-  const filteredAircraft = useMemo(() => {
-    let result = [...fleetData];
+  // Filter & Sort Logic strictly on Categories
+  const filteredCategories = useMemo(() => {
+    let result = [...jetCategoriesData];
 
-    // Filter by Category
+    // Filter by Category ID
     if (selectedCategories.length > 0) {
-      result = result.filter((jet) => {
-        if (selectedCategories.includes("light") && jet.category === "light")
-          return true;
-        if (
-          selectedCategories.includes("midsize") &&
-          jet.category === "midsize"
-        )
-          return true;
-        if (
-          selectedCategories.includes("super-midsize") &&
-          jet.category === "super-midsize"
-        )
-          return true;
-        if (
-          selectedCategories.includes("heavy") &&
-          (jet.category === "large" || jet.category === "ultra-long-range")
-        )
-          return true;
-        return false;
-      });
+      result = result.filter((cat) => selectedCategories.includes(cat.id));
     }
 
-    // Filter by Budget
-    result = result.filter((jet) => {
-      const price = aircraftPrices[jet.id] || jet.illustrativeTrip.price || 20000;
+    // Filter by Budget in USD
+    result = result.filter((cat) => {
+      const price = categoryPrices[cat.id] || cat.illustrativeTrip.price || 20000;
       return price <= maxBudget;
     });
 
     // Filter by Cabin Preferences
     if (cabinPreferences.length > 0) {
-      result = result.filter((jet) => {
-        const amenitiesText = jet.amenities.join(" ").toLowerCase();
+      result = result.filter((cat) => {
+        const amenitiesText = cat.amenities.join(" ").toLowerCase();
         return cabinPreferences.every((pref) => {
           if (pref === "wifi")
-            return amenitiesText.includes("wi-fi") || amenitiesText.includes("wifi");
+            return amenitiesText.includes("wi-fi") || amenitiesText.includes("connectivity");
           if (pref === "lavatory")
             return amenitiesText.includes("lavatory");
           if (pref === "standup")
             return (
               amenitiesText.includes("stand-up") ||
-              parseFloat(jet.cabinHeight) >= 1.8
+              parseFloat(cat.cabinHeight) >= 1.75
             );
-          if (pref === "pet") return true; // All SKYVANTAGE fleet permits executive pets
+          if (pref === "galley")
+            return amenitiesText.includes("galley") || amenitiesText.includes("refreshment");
           return true;
         });
       });
@@ -138,36 +122,43 @@ export default function BookingResultsPage() {
     // Sort Logic
     if (sortBy === "price-asc") {
       result.sort((a, b) => {
-        const pA = aircraftPrices[a.id] || a.illustrativeTrip.price;
-        const pB = aircraftPrices[b.id] || b.illustrativeTrip.price;
+        const pA = categoryPrices[a.id] || a.illustrativeTrip.price;
+        const pB = categoryPrices[b.id] || b.illustrativeTrip.price;
         return pA - pB;
       });
     } else if (sortBy === "price-desc") {
       result.sort((a, b) => {
-        const pA = aircraftPrices[a.id] || a.illustrativeTrip.price;
-        const pB = aircraftPrices[b.id] || b.illustrativeTrip.price;
+        const pA = categoryPrices[a.id] || a.illustrativeTrip.price;
+        const pB = categoryPrices[b.id] || b.illustrativeTrip.price;
         return pB - pA;
       });
     } else if (sortBy === "range") {
       result.sort((a, b) => b.range - a.range);
     } else {
-      // Recommended: praetor-600 first
-      result.sort((a, b) => {
-        if (a.id === "praetor-600") return -1;
-        if (b.id === "praetor-600") return 1;
-        return 0;
-      });
+      // Recommended: Super-light and Super-midsize prominent
+      const order = [
+        "super-light-jet",
+        "super-midsize-jet",
+        "midsize-jet",
+        "turboprop",
+        "heavy-jet",
+        "entry-level-jet",
+        "ultra-long-range",
+        "piston",
+        "vip-airliner",
+      ];
+      result.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
     }
 
     return result;
   }, [selectedCategories, maxBudget, cabinPreferences, sortBy]);
 
-  const handleSelectAircraft = (jetId: string) => {
-    updateBooking({ selectedAircraftId: jetId });
-    router.push(`/booking/aircraft/${jetId}`);
+  const handleSelectCategory = (categoryId: string) => {
+    updateBooking({ selectedAircraftId: categoryId });
+    router.push(`/booking/aircraft/${categoryId}`);
   };
 
-  const comparedAircraftList = fleetData.filter((a) =>
+  const comparedCategoryList = jetCategoriesData.filter((a) =>
     compareIds.includes(a.id)
   );
 
@@ -206,13 +197,13 @@ export default function BookingResultsPage() {
         <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-[#E8E5DF]">
           <div>
             <span className="section-label">
-              Curated Aircraft Options
+              AIRCRAFT CATEGORY SELECTION
             </span>
             <h1 className="font-display text-3xl sm:text-4xl font-bold text-[#0F1420] tracking-tight">
-              The right jet. For your journey.
+              Select your aircraft category.
             </h1>
             <p className="text-sm sm:text-base text-[#555555] font-body mt-2 max-w-2xl">
-              Compare private aircraft suited to your route, your party and the way you like to travel.
+              Private charters are booked by aircraft size category. Choose the category that matches your passenger count, range, and cabin comfort requirements.
             </p>
           </div>
 
@@ -253,7 +244,7 @@ export default function BookingResultsPage() {
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4 text-[#C9A052]" />
                 <h3 className="font-display text-lg font-bold text-[#0F1420]">
-                  Filters
+                  Jet Categories
                 </h3>
               </div>
               <button
@@ -266,21 +257,26 @@ export default function BookingResultsPage() {
               </button>
             </div>
 
-            {/* Aircraft Category */}
+            {/* Jet Size Category Checkboxes */}
             <div className="space-y-3 pb-5 border-b border-[#E8E5DF]">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#0F1420] block">
-                Aircraft Category
+                Jet Size
               </span>
-              <div className="space-y-2.5 text-xs font-body">
+              <div className="space-y-2 text-xs font-body">
                 {[
-                  { id: "light", label: "Light jet (up to 8 seats)" },
-                  { id: "midsize", label: "Midsize jet (up to 9 seats)" },
-                  { id: "super-midsize", label: "Super-midsize jet (9–10 seats)" },
-                  { id: "heavy", label: "Heavy & long-range (12–19 seats)" },
+                  { id: "piston", label: "Piston (3–4 seats)" },
+                  { id: "turboprop", label: "Turboprop (6–8 seats)" },
+                  { id: "entry-level-jet", label: "Entry Level Jet (4–5 seats)" },
+                  { id: "super-light-jet", label: "Super Light Jet (7–8 seats)" },
+                  { id: "midsize-jet", label: "Mid-Size Jet (8–9 seats)" },
+                  { id: "super-midsize-jet", label: "Super Mid-Size (9–10 seats)" },
+                  { id: "heavy-jet", label: "Heavy Jet (10–14 seats)" },
+                  { id: "ultra-long-range", label: "Ultra-Long-Range (14–19 seats)" },
+                  { id: "vip-airliner", label: "VIP Airliner (19–30+ seats)" },
                 ].map((cat) => (
                   <label
                     key={cat.id}
-                    className="flex items-center gap-3 cursor-pointer group text-[#555555] hover:text-[#0F1420]"
+                    className="flex items-center gap-2.5 cursor-pointer group text-[#555555] hover:text-[#0F1420]"
                   >
                     <input
                       type="checkbox"
@@ -294,42 +290,42 @@ export default function BookingResultsPage() {
               </div>
             </div>
 
-            {/* Journey Budget Slider */}
+            {/* Journey Budget Slider (USD) */}
             <div className="space-y-3 pb-5 border-b border-[#E8E5DF]">
               <div className="flex justify-between items-center text-xs">
                 <span className="font-semibold uppercase tracking-wider text-[#0F1420]">
-                  Max Charter Budget
+                  Max Budget (USD)
                 </span>
                 <span className="font-bold text-[#C9A052]">
-                  £{maxBudget.toLocaleString()}
+                  ${maxBudget.toLocaleString()}
                 </span>
               </div>
               <input
                 type="range"
-                min="10000"
-                max="60000"
+                min="5000"
+                max="100000"
                 step="2500"
                 value={maxBudget}
                 onChange={(e) => setMaxBudget(Number(e.target.value))}
                 className="w-full accent-[#C9A052] cursor-pointer"
               />
               <div className="flex justify-between text-[11px] text-[#888888]">
-                <span>£10,000</span>
-                <span>£60,000+</span>
+                <span>$5,000</span>
+                <span>$100,000+</span>
               </div>
             </div>
 
             {/* Cabin Preferences */}
             <div className="space-y-3">
               <span className="text-xs font-semibold uppercase tracking-wider text-[#0F1420] block">
-                Cabin Preferences
+                Cabin Features
               </span>
               <div className="space-y-2.5 text-xs font-body">
                 {[
-                  { id: "wifi", label: "Wi-Fi onboard" },
-                  { id: "lavatory", label: "Enclosed lavatory" },
-                  { id: "standup", label: "Stand-up cabin (1.8m+)" },
-                  { id: "pet", label: "Pet-friendly cabin" },
+                  { id: "wifi", label: "High-speed Wi-Fi" },
+                  { id: "lavatory", label: "Enclosed private lavatory" },
+                  { id: "standup", label: "Full stand-up cabin" },
+                  { id: "galley", label: "Galley / Refreshment bar" },
                 ].map((pref) => (
                   <label
                     key={pref.id}
@@ -355,27 +351,26 @@ export default function BookingResultsPage() {
               <p>
                 Our flight advisors can source unlisted charter capacity worldwide.
               </p>
-              <a
-                href="https://wa.me/447010452726"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-block pt-1 font-semibold text-[#C9A052] hover:underline"
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event("open-concierge-chat"))}
+                className="inline-block pt-1 font-semibold text-[#C9A052] hover:underline cursor-pointer"
               >
-                Inquire via WhatsApp ↗
-              </a>
+                Inquire with Concierge ↗
+              </button>
             </div>
           </aside>
 
-          {/* Results List (flex-1 / 8 cols) */}
+          {/* Results List (8 cols) */}
           <div className="lg:col-span-8 xl:col-span-9 space-y-6">
-            {filteredAircraft.length === 0 ? (
+            {filteredCategories.length === 0 ? (
               <div className="bg-white rounded-2xl border border-[#E8E5DF] p-12 text-center space-y-4">
                 <Plane className="w-12 h-12 text-[#888888] mx-auto opacity-40" />
                 <h3 className="font-display text-xl font-bold text-[#0F1420]">
-                  No aircraft match your exact filters
+                  No jet category matches your exact filters
                 </h3>
                 <p className="text-sm text-[#555555] max-w-md mx-auto">
-                  Try adjusting your budget slider or clearing specific category restrictions to see available jets.
+                  Try adjusting your budget slider or clearing category filters to see available aircraft sizes.
                 </p>
                 <button
                   type="button"
@@ -386,17 +381,17 @@ export default function BookingResultsPage() {
                 </button>
               </div>
             ) : (
-              filteredAircraft.map((jet) => {
-                const isOurPick = jet.id === "praetor-600";
-                const isCompared = compareIds.includes(jet.id);
+              filteredCategories.map((cat) => {
+                const isOurPick = cat.id === "super-light-jet";
+                const isCompared = compareIds.includes(cat.id);
                 const price =
-                  aircraftPrices[jet.id] ||
-                  jet.illustrativeTrip.price ||
+                  categoryPrices[cat.id] ||
+                  cat.illustrativeTrip.price ||
                   20500;
 
                 return (
                   <div
-                    key={jet.id}
+                    key={cat.id}
                     className={`bg-white rounded-3xl border transition-all duration-300 overflow-hidden hover:shadow-lg relative ${
                       isOurPick
                         ? "border-[#C9A052] shadow-sm"
@@ -408,75 +403,126 @@ export default function BookingResultsPage() {
                       <div className="absolute top-4 left-4 z-10">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#C9A052] text-[#0F1420] shadow-sm">
                           <Sparkles className="w-3.5 h-3.5" />
-                          OUR PICK
+                          POPULAR CHOICE
                         </span>
                       </div>
                     )}
 
                     <div className="flex flex-col md:flex-row items-stretch">
-                      {/* Left: Aircraft Image (300px wide on desktop) */}
-                      <div className="md:w-[300px] xl:w-[320px] h-60 md:h-auto relative bg-gray-100 flex-shrink-0">
-                        <img
-                          src={jet.imageExterior}
-                          alt={jet.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+                      {/* Left: Aircraft Category Image */}
+                      {(() => {
+                        const view = categoryViewMap[cat.id] || "exterior";
+                        const imgSource = view === "exterior" ? cat.imageExterior : cat.imageInterior;
+                        return (
+                          <div className="md:w-[300px] xl:w-[320px] h-60 md:h-auto relative bg-gray-900 flex-shrink-0 group">
+                            <img
+                              src={imgSource}
+                              alt={`${cat.name} ${view} view`}
+                              className="w-full h-full object-cover transition-all duration-500"
+                              onError={(e) => {
+                                e.currentTarget.src = view === "exterior" ? "/images/jet-exterior.jpg" : "/images/jet-interior.jpg";
+                              }}
+                            />
+                            <div className="absolute bottom-3 left-3 bg-[#0F1420]/80 backdrop-blur-md px-2.5 py-1 rounded-lg">
+                              <span className="text-[10px] font-bold uppercase text-[#C9A052] tracking-wider">
+                                {cat.categoryLabel}
+                              </span>
+                            </div>
+
+                            {/* View Switcher Toggle */}
+                            <div className="absolute top-3 right-3 z-10 flex items-center bg-[#0F1420]/85 backdrop-blur-md rounded-full p-0.5 border border-white/15">
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCategoryViewMap((prev) => ({ ...prev, [cat.id]: "exterior" }));
+                                }}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all ${
+                                  view === "exterior"
+                                    ? "bg-[#C9A052] text-[#0F1420]"
+                                    : "text-white/80 hover:text-white"
+                                }`}
+                              >
+                                Exterior
+                              </button>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setCategoryViewMap((prev) => ({ ...prev, [cat.id]: "interior" }));
+                                }}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold transition-all ${
+                                  view === "interior"
+                                    ? "bg-[#C9A052] text-[#0F1420]"
+                                    : "text-white/80 hover:text-white"
+                                }`}
+                              >
+                                Interior
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })()}
 
                       {/* Right: Card Details */}
                       <div className="flex-1 p-6 sm:p-7 flex flex-col justify-between">
                         <div>
-                          {/* Top row: Category + Name + Price */}
+                          {/* Top row: Category + Price in USD */}
                           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 pb-3 border-b border-gray-100">
                             <div>
                               <span className="text-[11px] font-body uppercase tracking-wider font-semibold text-[#C9A052] block">
-                                {jet.categoryLabel}
+                                Jet Size Class
                               </span>
                               <h3 className="font-display text-2xl font-bold text-[#0F1420]">
-                                {jet.name}
+                                {cat.name}
                               </h3>
                             </div>
 
                             <div className="text-left sm:text-right">
                               <span className="text-[11px] text-[#888888] uppercase tracking-wider block">
-                                Illustrative total
+                                Estimated charter
                               </span>
                               <div className="font-display text-2xl font-bold text-[#0F1420]">
-                                £{price.toLocaleString()}
+                                ${price.toLocaleString()}
                               </div>
                               <span className="text-[11px] text-[#555555]">
-                                Entire aircraft GBP
+                                USD · Entire aircraft
                               </span>
                             </div>
                           </div>
 
-                          {/* Route Specification line */}
-                          <div className="py-2.5 text-xs font-semibold text-[#0F1420] flex items-center gap-2">
-                            <span>2h nonstop</span>
-                            <span>·</span>
-                            <span>{paxCount} {paxCount === 1 ? "adult" : "adults"}</span>
-                            <span>·</span>
-                            <span>Private cabin</span>
-                          </div>
+                          {/* Representative models line */}
+                          {cat.typicalAircraft && cat.typicalAircraft.length > 0 && (
+                            <div className="py-2.5 text-xs text-[#0F1420] flex flex-wrap items-center gap-1.5 font-medium">
+                              <span className="text-[#888888]">Typical aircraft in class:</span>
+                              <span className="font-semibold text-[#0F1420]">
+                                {cat.typicalAircraft.join(" · ")}
+                              </span>
+                            </div>
+                          )}
 
                           {/* Short Description */}
                           <p className="text-xs sm:text-sm text-[#555555] font-body line-clamp-2 mb-4 leading-relaxed">
-                            {jet.description}
+                            {cat.description}
                           </p>
 
                           {/* Quick Specs Icons */}
-                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 py-3 border-t border-gray-100 text-xs text-[#555555]">
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 py-3 border-t border-gray-100 text-xs text-[#555555]">
                             <div className="flex items-center gap-2">
                               <Users className="w-4 h-4 text-[#C9A052]" />
-                              <span>{jet.passengersLabel}</span>
+                              <span>{cat.passengersLabel}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Compass className="w-4 h-4 text-[#C9A052]" />
-                              <span>{jet.rangeLabel}</span>
+                              <span>{cat.rangeLabel}</span>
                             </div>
-                            <div className="hidden sm:flex items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <Plane className="w-4 h-4 text-[#C9A052]" />
-                              <span>Speed: {jet.cruiseSpeed}</span>
+                              <span>{cat.cruiseSpeed}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Luggage className="w-4 h-4 text-[#C9A052]" />
+                              <span>{cat.baggageVolume}</span>
                             </div>
                           </div>
                         </div>
@@ -488,19 +534,19 @@ export default function BookingResultsPage() {
                             <input
                               type="checkbox"
                               checked={isCompared}
-                              onChange={() => toggleCompare(jet.id)}
+                              onChange={() => toggleCompare(cat.id)}
                               className="h-4 w-4 rounded border-gray-300 text-[#C9A052] focus:ring-[#C9A052] accent-[#C9A052]"
                             />
                             <span>Add to compare</span>
                           </label>
 
-                          {/* View aircraft button */}
+                          {/* Select Category button */}
                           <button
                             type="button"
-                            onClick={() => handleSelectAircraft(jet.id)}
-                            className="btn-primary px-6 py-2.5 text-xs sm:text-sm flex items-center gap-2"
+                            onClick={() => handleSelectCategory(cat.id)}
+                            className="btn-primary px-6 py-2.5 text-xs sm:text-sm flex items-center gap-2 shadow-sm"
                           >
-                            <span>View aircraft</span>
+                            <span>Select category</span>
                             <ArrowRight className="w-4 h-4" />
                           </button>
                         </div>
@@ -518,21 +564,26 @@ export default function BookingResultsPage() {
       {compareIds.length >= 2 && (
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-[#0F1420] text-white border-t border-[#C9A052]/40 shadow-2xl py-4 px-4 sm:px-8">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <span className="w-6 h-6 rounded-full bg-[#C9A052] text-[#0F1420] text-xs font-bold flex items-center justify-center">
-                {compareIds.length}
+            <div className="flex items-center gap-4">
+              <span className="text-xs uppercase tracking-wider font-semibold text-[#C9A052]">
+                Comparing {compareIds.length} Categories:
               </span>
-              <div className="text-xs sm:text-sm">
-                <span className="font-semibold text-white">
-                  {compareIds.length} aircraft selected:{" "}
-                </span>
-                <span className="text-gray-300">
-                  {comparedAircraftList.map((a) => a.name).join(", ")}
-                </span>
-                <span className="hidden md:inline text-gray-400">
-                  {" "}
-                  · Compare cabin, capacity and price
-                </span>
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {comparedCategoryList.map((jet) => (
+                  <span
+                    key={jet.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-xs"
+                  >
+                    <span>{jet.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleCompare(jet.id)}
+                      className="hover:text-red-400"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
               </div>
             </div>
 
@@ -540,138 +591,101 @@ export default function BookingResultsPage() {
               <button
                 type="button"
                 onClick={() => setCompareIds([])}
-                className="text-xs text-gray-400 hover:text-white transition-colors"
+                className="text-xs text-gray-400 hover:text-white underline"
               >
                 Clear all
               </button>
               <button
                 type="button"
                 onClick={() => setShowCompareModal(true)}
-                className="btn-gold text-xs py-2.5 px-6 font-semibold"
+                className="btn-gold px-5 py-2 text-xs font-bold"
               >
-                Compare aircraft
+                View side-by-side
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Compare Modal */}
+      {/* Comparison Modal */}
       {showCompareModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-5xl w-full p-6 sm:p-8 my-8 shadow-2xl border border-[#E8E5DF] relative">
-            <div className="flex justify-between items-center pb-4 border-b border-[#E8E5DF] mb-6">
-              <div>
-                <span className="text-[11px] uppercase tracking-wider text-[#C9A052] font-semibold block">
-                  Side-by-Side Analysis
-                </span>
-                <h3 className="font-display text-2xl font-bold text-[#0F1420]">
-                  Compare Selected Aircraft
-                </h3>
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-5xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-gray-100">
+              <h3 className="font-display text-2xl font-bold text-[#0F1420]">
+                Category Comparison
+              </h3>
               <button
                 type="button"
                 onClick={() => setShowCompareModal(false)}
-                className="p-2 text-gray-400 hover:text-[#0F1420] rounded-full hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm font-body border-collapse">
-                <thead>
-                  <tr className="border-b border-[#E8E5DF]">
-                    <th className="p-3 text-xs uppercase text-[#888888] font-semibold w-40">
-                      Aircraft
-                    </th>
-                    {comparedAircraftList.map((jet) => (
-                      <th key={jet.id} className="p-3 min-w-[200px]">
-                        <div className="space-y-2">
-                          <img
-                            src={jet.imageExterior}
-                            alt={jet.name}
-                            className="w-full h-28 object-cover rounded-xl"
-                          />
-                          <span className="text-xs uppercase text-[#C9A052] font-bold block">
-                            {jet.categoryLabel}
-                          </span>
-                          <span className="font-display text-lg font-bold text-[#0F1420] block">
-                            {jet.name}
-                          </span>
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E8E5DF] text-xs">
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Illustrative Price</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 font-bold text-base text-[#0F1420]">
-                        £{(aircraftPrices[jet.id] || jet.illustrativeTrip.price).toLocaleString()}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Capacity</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 text-[#555555]">
-                        {jet.passengersLabel}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Range</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 text-[#555555]">
-                        {jet.rangeLabel}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Cabin Height</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 text-[#555555]">
-                        {jet.cabinHeight}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Cruise Speed</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 text-[#555555]">
-                        {jet.cruiseSpeed}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Baggage</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3 text-[#555555]">
-                        {jet.baggageVolume}
-                      </td>
-                    ))}
-                  </tr>
-                  <tr>
-                    <td className="p-3 font-semibold text-[#0F1420]">Action</td>
-                    {comparedAircraftList.map((jet) => (
-                      <td key={jet.id} className="p-3">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowCompareModal(false);
-                            handleSelectAircraft(jet.id);
-                          }}
-                          className="btn-primary text-xs py-2 px-4 w-full justify-center"
-                        >
-                          Select Jet →
-                        </button>
-                      </td>
-                    ))}
-                  </tr>
-                </tbody>
-              </table>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {comparedCategoryList.map((cat) => (
+                <div
+                  key={cat.id}
+                  className="bg-[#F5F2EC]/50 rounded-2xl p-5 border border-[#E8E5DF] space-y-4"
+                >
+                  <div className="aspect-video rounded-xl overflow-hidden bg-gray-200">
+                    <img
+                      src={cat.imageExterior}
+                      alt={cat.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-[#C9A052]">
+                      {cat.categoryLabel}
+                    </span>
+                    <h4 className="font-display text-xl font-bold text-[#0F1420]">
+                      {cat.name}
+                    </h4>
+                    <span className="font-bold text-lg text-[#0F1420] block mt-1">
+                      ${(categoryPrices[cat.id] || cat.illustrativeTrip.price).toLocaleString()} USD
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs text-[#555555] pt-2 border-t border-gray-200">
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Capacity:</span>
+                      <span className="font-medium text-[#0F1420]">{cat.passengersLabel}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Range:</span>
+                      <span className="font-medium text-[#0F1420]">{cat.rangeLabel}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Speed:</span>
+                      <span className="font-medium text-[#0F1420]">{cat.cruiseSpeed}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-400">Baggage:</span>
+                      <span className="font-medium text-[#0F1420]">{cat.baggageVolume}</span>
+                    </div>
+                    <div className="pt-2">
+                      <span className="text-gray-400 block mb-1">Typical Aircraft:</span>
+                      <span className="font-medium text-[#0F1420]">
+                        {cat.typicalAircraft?.join(", ") || "Certified fleet"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowCompareModal(false);
+                      handleSelectCategory(cat.id);
+                    }}
+                    className="btn-primary w-full py-2.5 text-xs font-semibold"
+                  >
+                    Select this category
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
         </div>

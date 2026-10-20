@@ -15,8 +15,13 @@ import {
   Sparkles,
   Loader2,
   Check,
+  ChevronDown,
+  Building2,
+  Dog,
+  Crosshair,
 } from "lucide-react";
-import { fleetData } from "@/data/fleet";
+import { jetCategoriesData, fleetData } from "@/data/fleet";
+import { getAirportFBO, KNOWN_FBOS } from "@/data/airports";
 
 /* ─────────────────────────────────────────────
    Types
@@ -24,7 +29,7 @@ import { fleetData } from "@/data/fleet";
 type ActionType =
   | "whatsapp"
   | "booking_and_whatsapp"
-  | "naira_fee_modal";
+  | "concierge_fee_modal";
 
 interface MessageAction {
   type: ActionType;
@@ -53,38 +58,54 @@ interface BookingSummaryPayload {
 }
 
 /* ─────────────────────────────────────────────
-   Quick-reply chips shown at bottom of chat
+   Chatbot Category Dropdown Topics
 ───────────────────────────────────────────── */
-const QUICK_REPLIES = [
-  "What jets do you have?",
-  "How much does it cost?",
-  "Which airports do you use?",
-  "How do I book?",
-  "What's included?",
-  "Pets on board?",
-  "Speak to a concierge",
+const CHAT_CATEGORIES = [
+  { value: "", label: "— Select a topic or question category —" },
+  {
+    value: "What aircraft categories do you offer?",
+    label: "🛩 Aircraft Categories (Piston, Turboprop, Light to Airliner)",
+  },
+  {
+    value: "How much does a charter cost in USD?",
+    label: "💵 Charter Pricing in USD ($)",
+  },
+  {
+    value: "What are the airport FBO contacts, phone numbers and emails?",
+    label: "🏢 VIP Airport FBO Terminals (Phone & Email Directory)",
+  },
+  {
+    value: "Can I bring pets on board and what documents are required?",
+    label: "🐾 Pets on Board (Passports & Documentation)",
+  },
+  {
+    value: "What are the rules and procedures for carrying firearms or weapons on board?",
+    label: "🎯 Firearms & Weapons Carriage Procedures",
+  },
+  {
+    value: "What is the cancellation and refund policy?",
+    label: "📋 Cancellation & Refund Terms",
+  },
+  {
+    value: "I would like to speak to an available flight concierge officer",
+    label: "👤 Speak to Human Flight Officer ($500 Connection Fee)",
+  },
+  {
+    value: "What is included in the charter price?",
+    label: "✨ What is Included in Charter Quote",
+  },
 ];
 
 /* ─────────────────────────────────────────────
    Knowledge-base helper
 ───────────────────────────────────────────── */
-function buildFleetSummary(): string {
-  return fleetData
+function buildCategoriesSummary(): string {
+  return jetCategoriesData
     .map(
-      (a) =>
-        `• ${a.name} (${a.categoryLabel}) — ${a.passengersLabel}, range ${a.rangeLabel}, from £${a.illustrativeTrip.price.toLocaleString()} (${a.illustrativeTrip.route})`
+      (c) =>
+        `• **${c.name}**: ${c.passengersLabel}, range ${c.rangeLabel}, speed ${c.cruiseSpeed} — from $${c.illustrativeTrip.price.toLocaleString()} USD (${c.illustrativeTrip.route})`
     )
     .join("\n");
-}
-
-function getAircraftByName(query: string): (typeof fleetData)[0] | undefined {
-  const q = query.toLowerCase();
-  return fleetData.find(
-    (a) =>
-      a.name.toLowerCase().includes(q) ||
-      a.manufacturer.toLowerCase().includes(q) ||
-      a.id.toLowerCase().includes(q)
-  );
 }
 
 /* ─────────────────────────────────────────────
@@ -99,122 +120,113 @@ function getBotResponse(userText: string): {
   /* ── Greetings ── */
   if (/\b(hi|hello|hey|good morning|good afternoon|good evening|howdy)\b/.test(lower)) {
     return {
-      text: "Hello! 👋 Welcome to Orbelo Private Aviation. I can help you with:\n\n✈ Our aircraft fleet\n🗺 Routes & airports\n💷 Pricing & quotes\n📋 How to book\n🐾 Pets & special requests\n\nWhat would you like to know?",
+      text: "Hello! 👋 Welcome to Orbelo Private Aviation.\n\nI am your AI flight advisor. You can ask me or select a topic from the dropdown below:\n\n✈️ Aircraft categories & jet sizes\n💵 Pricing in USD ($)\n🏢 Airport VIP FBO contacts (Phone & Email)\n🐾 Pets on board & passport rules\n🎯 Firearms & weapons compliance\n📋 Cancellation & refund policy\n👤 Direct connection to our flight officers",
     };
   }
 
-  /* ── Fleet / Aircraft overview ── */
+  /* ── Weapons & Firearms On Board ── */
+  if (/\b(weapon|weapons|firearm|firearms|gun|guns|rifle|shotgun|handgun|pistol|ammunition|ammo|shoot|hunting)\b/.test(lower)) {
+    return {
+      text: "🎯 **Firearms & Weapons Onboard Policy**:\n\nLicensed sporting, hunting, and diplomatic security firearms are welcomed on our private charters under strict aviation protocol:\n\n1. **24–48h Advance Declaration:** Weapons and ammunition must be formally declared to dispatch prior to flight.\n2. **Unloaded & Locked:** Must be completely unloaded and secured inside a crushproof, locked hard-sided case.\n3. **Ammunition:** Stored separately in original packaging (max 5 kg / 11 lbs gross per passenger per IATA regulations).\n4. **Terminal Inspection:** Physical serial numbers and valid licenses are inspected by FBO security and the Captain before boarding.\n5. **Permits:** Valid national firearm certificates and destination country import/transit permits must be provided.\n\nWould you like to speak to an officer to clear a flight manifest?",
+    };
+  }
+
+  /* ── Pets On Board ── */
+  if (/\b(pet|pets|dog|dogs|cat|cats|animal|animals|falcon|vet|veterinary|passport)\b/.test(lower)) {
+    return {
+      text: "🐾 **Pets on Board Protocol**:\n\nYour pets fly comfortably right beside you in the luxury passenger cabin — never in cargo hold.\n\n**Mandatory Requirements**:\n• Valid International Pet Passport or official Veterinary Health Certificate\n• ISO 11784/11785 compliant microchip\n• Current Rabies and core vaccination history\n• Fit-to-fly health clearance completed within 10 days of departure\n\nOur concierge coordinates handling and terminal pet clearance seamlessly.",
+    };
+  }
+
+  /* ── Cancellation Policy ── */
+  if (/\b(cancel|cancellation|refund|reschedule|terms|guarantee|policy)\b/.test(lower)) {
+    return {
+      text: "📋 **Updated Cancellation & Refund Terms**:\n\n• **7+ Days Prior:** 100% full charter refund (less $500 concierge connection fee).\n• **72 Hours to 7 Days:** 80% refund, or 100% flight credit valid for 12 months.\n• **24 to 72 Hours:** 50% charter refund.\n• **Under 24 Hours / Aircraft Repositioned:** Non-refundable once aircraft positioning has begun.\n• **Weather & Technical Guarantee:** If adverse weather or ATC prevents flight, an equivalent category aircraft is immediately dispatched or 100% refund is issued with zero penalties.",
+    };
+  }
+
+  /* ── Aircraft / Categories overview ── */
   if (
-    /\b(fleet|aircraft|jets?|planes?|what (jets?|aircraft|planes?)|show me|available)\b/.test(lower) &&
+    /\b(fleet|aircraft|jets?|planes?|categories|category|sizes?|turboprop|piston|midsize|super light|airliner|heavy)\b/.test(lower) &&
     !lower.includes("how much") &&
     !lower.includes("price") &&
     !lower.includes("cost")
   ) {
-    const specific = getAircraftByName(lower);
-    if (specific) {
-      return {
-        text: `Here's everything about the **${specific.name}**:\n\n🛩 Category: ${specific.categoryLabel}\n👥 Passengers: ${specific.passengersLabel}\n🌍 Range: ${specific.rangeLabel}\n💺 Cabin height: ${specific.cabinHeight}\n⚡ Speed: ${specific.cruiseSpeed}\n\n✨ Highlights:\n${specific.highlights.map((h) => `• ${h}`).join("\n")}\n\n🎯 Ideal for: ${specific.idealFor}\n\n📅 Sample trip: ${specific.illustrativeTrip.route} — from £${specific.illustrativeTrip.price.toLocaleString()} (${specific.illustrativeTrip.duration})`,
-      };
-    }
     return {
-      text: `We operate 8 world-class private jets:\n\n${buildFleetSummary()}\n\nAsk me about any specific aircraft for full details, or tell me your passenger count and destination and I'll recommend the best fit.`,
+      text: `Our private aviation network is structured into 9 vetted aircraft categories:\n\n${buildCategoriesSummary()}\n\nSelect any category in our booking flow to view detailed cabin specifications and representative aircraft.`,
     };
   }
 
-  /* ── Specific aircraft lookup ── */
-  const specificAircraft = getAircraftByName(lower);
-  if (
-    specificAircraft &&
-    (lower.includes("tell me") ||
-      lower.includes("about") ||
-      lower.includes("detail") ||
-      lower.includes("spec") ||
-      lower.includes("info") ||
-      fleetData.some((a) => lower.includes(a.name.toLowerCase())))
-  ) {
-    const a = specificAircraft;
+  /* ── Pricing / Cost in USD ── */
+  if (/\b(cost|price|pricing|how much|rates?|dollar|usd|quote|estimate)\b/.test(lower)) {
     return {
-      text: `**${a.name}** — ${a.categoryLabel}\n\n${a.description}\n\n📋 Specs:\n👥 ${a.passengersLabel} passengers\n🌍 ${a.rangeLabel} range\n⚡ Cruise speed: ${a.cruiseSpeed}\n📦 Baggage: ${a.baggageVolume}\n\n🛎 Amenities:\n${a.amenities.map((am) => `• ${am}`).join("\n")}\n\n💷 From £${a.illustrativeTrip.price.toLocaleString()} — ${a.illustrativeTrip.route} (${a.illustrativeTrip.duration})`,
-    };
-  }
-
-  /* ── Pricing / Cost ── */
-  if (/\b(cost|price|pricing|how much|rates?|expensive|cheap|afford|quote|estimate)\b/.test(lower)) {
-    return {
-      text: "Our charter pricing is based on route, aircraft type, and dates. Here's a broad guide:\n\n💛 Light jets (6–8 pax)\n   From £8,000 — e.g. London → Paris\n\n🥈 Midsize jets (7–9 pax)\n   From £14,000 — e.g. London → Nice\n\n🥇 Super-midsize (8–10 pax)\n   From £20,000 — e.g. London → Dubai\n\n🏆 Large / Ultra-long-range (14–19 pax)\n   From £40,000 — e.g. London → New York\n\nAll prices include crew, handling, and taxes. For a tailored quotation and flight officer assignment, a ₦500 connection fee applies.",
+      text: "💵 **Charter Pricing Guide (USD $)**:\n\nAll pricing is calculated in US Dollars ($) for the entire aircraft:\n\n• **Piston Aircraft (3–4 pax):** from $5,200 (e.g. London → Manchester)\n• **Turboprop (6–8 pax):** from $8,500 (e.g. Geneva → Nice)\n• **Entry Level Jet (4–5 pax):** from $11,500 (e.g. London → Paris)\n• **Super Light Jet (7–8 pax):** from $15,800 (e.g. London → Nice)\n• **Mid-Size Jet (8–9 pax):** from $21,000 (e.g. London → Milan)\n• **Super Mid-Size (9–10 pax):** from $28,500 (e.g. London → Dubai)\n• **Heavy Jet (10–14 pax):** from $39,000 (e.g. New York → London)\n• **Ultra-Long-Range (14–19 pax):** from $58,000 (e.g. London → Los Angeles)\n• **VIP Airliner (19–30+ pax):** from $95,000 (e.g. London → Singapore)\n\nTo lock your itinerary and assign a dedicated flight officer, a standard $500 USD connection fee applies (100% credited towards your charter).",
       action: {
-        type: "naira_fee_modal",
+        type: "concierge_fee_modal",
       },
     };
   }
 
-  /* ── Airports & Regions ── */
+  /* ── Airports & FBO Directory ── */
   if (
-    /\b(airport|airports|terminal|fbo|airfield|land|depart|fly from|fly out of|heathrow|farnborough|biggin|luton|stansted|gatwick|oxford|bournemouth|dubai|nice|geneva|new york|teterboro|jfk|lagos|cairo|cape town|nairobi|johannesburg|accra|abuja|kigali|morocco|marrakech|africa|african)\b/.test(
+    /\b(airport|airports|terminal|fbo|fixed base|handler|phone|email|contact|farnborough|biggin|luton|stansted|nice|geneva|teterboro|opa-locka|van nuys|dubai|lagos|abuja|cairo|marrakech|johannesburg|cape town)\b/.test(
       lower
     )
   ) {
-    return {
-      text: "We operate from dedicated private aviation terminals & VIP FBO hubs globally:\n\n🌍 Africa & Middle East\n• Lagos (LOS), Abuja (ABV), Port Harcourt (PHC)\n• Cairo (CAI), Marrakech (RAK), Casablanca (CMN)\n• Cape Town (CPT), Johannesburg (JNB/HLA)\n• Nairobi (WIL), Accra (ACC), Kigali (KGL)\n• Dubai (DXB/DWC), Seychelles (SEZ), Mauritius (MRU)\n\n🇬🇧 United Kingdom & Europe\n• London Farnborough (FAB), Biggin Hill (BQH), Luton, Stansted\n• Nice Côte d'Azur (NCE), Cannes (CEQ), Geneva (GVA), Paris (LBG)\n\n🇺🇸 Americas\n• New York Teterboro (TEB), Miami (OPF), Los Angeles (VNY)\n\nWhat is your preferred departure or arrival city?",
-    };
-  }
+    // Check if user named a specific airport
+    let fboDetail = "";
+    if (lower.includes("farnborough") || lower.includes("fab")) {
+      const f = KNOWN_FBOS["FAB"];
+      fboDetail = `\n\n📌 **London Farnborough (FAB)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    } else if (lower.includes("nice") || lower.includes("nce")) {
+      const f = KNOWN_FBOS["NCE"];
+      fboDetail = `\n\n📌 **Nice Côte d'Azur (NCE)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    } else if (lower.includes("teterboro") || lower.includes("teb") || lower.includes("new york")) {
+      const f = KNOWN_FBOS["TEB"];
+      fboDetail = `\n\n📌 **New York Teterboro (TEB)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    } else if (lower.includes("dubai") || lower.includes("dxb")) {
+      const f = KNOWN_FBOS["DXB"];
+      fboDetail = `\n\n📌 **Dubai International (DXB)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    } else if (lower.includes("lagos") || lower.includes("los")) {
+      const f = KNOWN_FBOS["LOS"];
+      fboDetail = `\n\n📌 **Lagos Murtala Muhammed (LOS)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    } else if (lower.includes("geneva") || lower.includes("gva")) {
+      const f = KNOWN_FBOS["GVA"];
+      fboDetail = `\n\n📌 **Geneva Cointrin (GVA)**:\n• FBO: ${f.name}\n• Phone: ${f.phone}\n• Email: ${f.email}`;
+    }
 
-  /* ── Destinations / Routes ── */
-  if (/\b(destination|destinations|where|fly to|route|routes|travel to|go to|places)\b/.test(lower)) {
     return {
-      text: "We fly globally to over 190+ VIP destinations ✈\n\nPopular routes:\n• London ↔ Nice / French Riviera (2h)\n• London ↔ Lagos / Abuja (6h 30m)\n• Dubai ↔ Maldives (4h)\n• Paris ↔ Marrakech (3h)\n• London ↔ New York (7h 30m)\n• Johannesburg ↔ Cape Town (2h)\n\nWhere would you like to travel?",
+      text: `🏢 **Fixed-Base Operator (FBO) Directory**:\n\nOur private charters depart and arrive via dedicated executive VIP terminals with discrete ramp access, private lounges, and zero security queues.${fboDetail}\n\n**Key Hubs**:\n• London Farnborough (FAB): +44 1252 375300 · ops@farnboroughairport.com\n• Nice Côte d'Azur (NCE): +33 4 93 21 00 10 · nce@signatureflight.com\n• Paris Le Bourget (LBG): +33 1 48 35 88 88 · lbg@jetaviation.com\n• New York Teterboro (TEB): +1 201 288 5040 · fbo@meridian.aero\n• Miami Opa-locka (OPF): +1 305 685 4646 · fbo@fontainebleauaviation.com\n• Dubai VIP Terminal (DXB): +971 4 212 4000 · fbo-dxb@jetex.com\n• Lagos ExecuJet (LOS): +234 1 295 5110 · fbo.los@execujet.com\n\nTell me any city or airport IATA code, and I will fetch its exact VIP terminal contacts!`,
     };
   }
 
   /* ── How to book ── */
-  if (/\b(book|booking|reserve|how do i|steps?|process|start|get started)\b/.test(lower)) {
+  if (/\b(book|booking|reserve|how do i|steps?|process|start)\b/.test(lower)) {
     return {
-      text: "Booking with Orbelo is simple and discreet:\n\n1️⃣ Select your route, date & guest count\n2️⃣ Choose your preferred aircraft\n3️⃣ Request quotation & connect to your concierge\n4️⃣ Confirm tail assignment & receive your flight manifest\n\nWould you like to speak to an available agent now?",
+      text: "Booking with Orbelo is simple and discreet:\n\n1️⃣ **Select your route, date & guest count**\n2️⃣ **Choose your preferred aircraft size category** (Turboprop, Light, Midsize, Heavy, etc.)\n3️⃣ **Customize in-flight details** (Catering, Chauffeur address, Pets, Firearms declaration)\n4️⃣ **Submit quotation** & connect with your assigned flight concierge officer\n\nWould you like to connect with a concierge now?",
       action: {
-        type: "naira_fee_modal",
+        type: "concierge_fee_modal",
       },
     };
   }
 
   /* ── What's included ── */
-  if (/\b(includ|what'?s? included|comes with|covers?|covered)\b/.test(lower)) {
+  if (/\b(includ|what'?s? included|comes with|covers?)\b/.test(lower)) {
     return {
-      text: "Your charter quote always includes:\n\n✅ Aircraft & certified dual-pilot crew\n✅ Premium in-flight refreshments & bar\n✅ VIP private terminal (FBO) handling\n✅ All airport landing fees & navigation charges\n✅ Bespoke flight planning & schedule flexibility\n\nOptional additions: Signature hot dining, chauffeured transfer, and luxury hotel/helicopter links.",
+      text: "Your charter quote always includes:\n\n✅ Entire aircraft in your selected category\n✅ Dual type-rated Captain flight crew\n✅ Premium in-flight bar & artisan refreshments\n✅ VIP private terminal (FBO) lounge & ramp access\n✅ All airport landing, navigation, and parking fees\n✅ High-speed in-flight Wi-Fi\n\nOptional touches: Custom gourmet hot dining, executive tarmac chauffeured transfer, floral styling, and pet travel.",
     };
   }
 
-  /* ── Pets ── */
-  if (/\b(pet|pets?|dog|dogs?|cat|cats?|animal|animals?)\b/.test(lower)) {
-    return {
-      text: "🐾 Yes! Pets are welcome in the cabin with you on almost all our private flights — never in cargo. They fly right alongside you in luxury.",
-    };
-  }
-
-  /* ── Cancellation ── */
-  if (/\b(cancel|cancellation|refund|change|reschedule)\b/.test(lower)) {
-    return {
-      text: "Our standard policy:\n\n✅ 7+ days before flight: Full refund\n⚠️ 3–7 days: 50% retained\n❌ Under 48 hours: Full fee applies\n\nFlexible terms can be arranged with your flight officer.",
-    };
-  }
-
-  /* ── Payment / Fee ── */
-  if (/\b(pay|payment|paying|naira|fee|deposit|invoice|card)\b/.test(lower)) {
-    return {
-      text: "To assign your request to an available private flight officer on WhatsApp, a standard connection fee of **500 Naira (₦500)** is required. This fee is 100% credited towards your charter flight.",
-      action: { type: "naira_fee_modal" },
-    };
-  }
-
-  /* ── Speak to human / agent / concierge ── */
+  /* ── Speak to human / agent / concierge / $500 fee ── */
   if (
-    /\b(speak|talk|human|person|agent|concierge|whatsapp|call|phone|contact|help me)\b/.test(
+    /\b(speak|talk|human|person|agent|concierge|whatsapp|call|phone|fee|pay|deposit)\b/.test(
       lower
     )
   ) {
     return {
-      text: "I will connect you with an available flight concierge agent right away. Please complete the ₦500 connection fee below to proceed to talk to our agents:",
+      text: "I will connect you directly with an available flight concierge agent on WhatsApp. Please complete the $500 USD connection fee below (100% credited toward your charter):",
       action: {
-        type: "naira_fee_modal",
+        type: "concierge_fee_modal",
       },
     };
   }
@@ -222,15 +234,15 @@ function getBotResponse(userText: string): {
   /* ── Compliment ── */
   if (/\b(thank|thanks|great|perfect|helpful|awesome|excellent)\b/.test(lower)) {
     return {
-      text: "You're very welcome! 😊 Feel free to ask anything about our aircraft, routes, or quotation process.",
+      text: "You're very welcome! Feel free to ask about any aircraft category, FBO terminals, or flight quotations in USD.",
     };
   }
 
   /* ── Fallback ── */
   return {
-    text: "I can connect you to an available flight concierge agent who will answer your request in detail on WhatsApp.",
+    text: "I can connect you to an available flight concierge officer who will answer your route request in detail on WhatsApp.",
     action: {
-      type: "naira_fee_modal",
+      type: "concierge_fee_modal",
     },
   };
 }
@@ -245,13 +257,15 @@ export default function Chatbot() {
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [hasInitialized, setHasInitialized] = useState<boolean>(false);
 
-  // ₦500 Modal State
-  const [showNairaModal, setShowNairaModal] = useState<boolean>(false);
+  // $500 USD Modal State
+  const [showFeeModal, setShowFeeModal] = useState<boolean>(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
   const [paymentSuccess, setPaymentSuccess] = useState<boolean>(false);
 
-  // Active booking summary from booking flow
-  const [activeBooking, setActiveBooking] = useState<BookingSummaryPayload | null>(null);
+  // Active booking transferred from payment page
+  const [activeBooking, setActiveBooking] = useState<BookingSummaryPayload | null>(
+    null
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -262,62 +276,46 @@ export default function Chatbot() {
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isTyping, showNairaModal, scrollToBottom]);
+  }, [messages, isTyping, scrollToBottom]);
 
-  /* Focus input when chat opens */
+  // Focus input when chat opens
   useEffect(() => {
     if (isOpen) {
-      setTimeout(() => inputRef.current?.focus(), 300);
+      setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen]);
 
-  /* ─────────────────────────────────────────────
-     Listen for "open-concierge-chat" event
-     Handles both simple navbar click and full booking payload
-  ───────────────────────────────────────────── */
+  /* ── Listen for "open-concierge-chat" event from anywhere in the app ── */
   useEffect(() => {
-    const handler = (e: Event) => {
-      const customEvent = e as CustomEvent<{ bookingSummary?: BookingSummaryPayload }>;
+    const handler = (event: Event) => {
+      const customEvent = event as CustomEvent<{
+        bookingSummary?: BookingSummaryPayload;
+      }>;
+      const summary = customEvent.detail?.bookingSummary;
+
       setIsOpen(true);
 
-      const summary = customEvent.detail?.bookingSummary;
       if (summary) {
         setActiveBooking(summary);
-
-        // Add user message with all the details picked
-        const userSummaryText = `📋 New Charter Quotation Request:
-• Route: ${summary.routeFrom} → ${summary.routeTo}
-• Aircraft: ${summary.aircraftName} (${summary.aircraftCategory})
-• Date & Time: ${summary.depDate} at ${summary.depTime} (${summary.tripType})
-• Guests: ${summary.passengers} Adult(s)
-• In-Flight Services: ${summary.services}
-• Estimated Total: ${summary.total}
-• Reference: ${summary.reference}`;
-
-        const userMsg: ChatMessage = {
-          id: `user-${Date.now()}`,
-          sender: "user",
-          text: userSummaryText,
-        };
-
-        setMessages((prev) => [...prev, userMsg]);
-        setIsTyping(true);
-
-        // Bot replies saying it will send them to an available agent, then opens 500 Naira modal
-        setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `bot-${Date.now()}`,
-              sender: "bot",
-              text: `Thank you for submitting your quotation request! ✈️\n\nI have received all your journey details for reference ${summary.reference}. I will connect you to an available flight concierge agent right away.\n\nPlease complete the ₦500 connection fee below to proceed to talk to our agents:`,
-              action: { type: "naira_fee_modal" },
-            },
-          ]);
-          setIsTyping(false);
-          // Pop up the 500 Naira modal
-          setShowNairaModal(true);
-        }, 800);
+        setMessages([
+          {
+            id: "bot-init",
+            sender: "bot",
+            text: "Hello! Welcome to Orbelo Private Aviation. 👋",
+          },
+          {
+            id: "user-summary",
+            sender: "user",
+            text: `Quotation Request (Ref: ${summary.reference})\n• Route: ${summary.routeFrom} → ${summary.routeTo}\n• Jet Category: ${summary.aircraftCategory}\n• Date: ${summary.depDate} at ${summary.depTime}\n• Party: ${summary.passengers} guests\n• Services: ${summary.services}\n• Estimated Total: ${summary.total}`,
+          },
+          {
+            id: "bot-fee-prompt",
+            sender: "bot",
+            text: `Thank you for submitting your quotation request! ✈️\n\nI have received all your journey details for reference ${summary.reference}. I will connect you to an available flight concierge officer right away.\n\nPlease complete the $500 USD connection fee below (100% credited towards your flight):`,
+            action: { type: "concierge_fee_modal" },
+          },
+        ]);
+        setShowFeeModal(true);
       }
     };
 
@@ -325,7 +323,7 @@ export default function Chatbot() {
     return () => window.removeEventListener("open-concierge-chat", handler);
   }, []);
 
-  /* Initial greeting when first opened without quotation */
+  // Initial greeting on first manual open
   useEffect(() => {
     if (isOpen && !hasInitialized && messages.length === 0) {
       setHasInitialized(true);
@@ -333,24 +331,16 @@ export default function Chatbot() {
       const t1 = setTimeout(() => {
         setMessages([
           {
-            id: "init-1",
+            id: "bot-welcome-1",
             sender: "bot",
-            text: "Hello! Welcome to Orbelo Private Aviation. ✈️\n\nI'm your AI concierge — I can answer questions about our fleet, airports, routes, pricing, and charter bookings.",
+            text: "Hello! Welcome to Orbelo Private Aviation. ✈️\n\nI'm your AI flight advisor. I can answer questions about aircraft categories, airport FBOs, USD pricing, pet policies, firearms compliance, and charter quotes.",
           },
         ]);
         const t2 = setTimeout(() => {
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: "init-2",
-              sender: "bot",
-              text: "How may I assist you today? Feel free to ask a question or explore our fleet and routes.",
-            },
-          ]);
           setIsTyping(false);
-        }, 800);
+        }, 600);
         return () => clearTimeout(t2);
-      }, 400);
+      }, 300);
       return () => clearTimeout(t1);
     }
   }, [isOpen, hasInitialized, messages.length]);
@@ -359,17 +349,17 @@ export default function Chatbot() {
     const text =
       customText ||
       (activeBooking
-        ? `Hi, I have requested a quotation with Orbelo:
+        ? `Hi, I have requested a private charter quotation with Orbelo:
 • Route: ${activeBooking.routeFrom} → ${activeBooking.routeTo}
-• Aircraft: ${activeBooking.aircraftName} (${activeBooking.aircraftCategory})
+• Category: ${activeBooking.aircraftCategory}
 • Date: ${activeBooking.depDate} at ${activeBooking.depTime} (${activeBooking.tripType})
 • Guests: ${activeBooking.passengers}
 • Services: ${activeBooking.services}
 • Estimated Total: ${activeBooking.total}
 • Reference: ${activeBooking.reference}
 
-I have successfully completed the ₦500 concierge fee. Please connect me with an available flight officer.`
-        : "Hi, I have paid the ₦500 concierge connection fee and would like to speak to an available flight officer about booking a private jet.");
+I have successfully completed the $500 USD concierge connection fee. Please connect me with an available flight officer.`
+        : "Hi, I have paid the $500 USD concierge connection fee and would like to speak to an available flight officer about booking a private charter.");
 
     window.open(
       `https://wa.me/447010452726?text=${encodeURIComponent(text)}`,
@@ -399,17 +389,17 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
         { id: `bot-${Date.now()}`, sender: "bot", text, action },
       ]);
       setIsTyping(false);
-      if (action?.type === "naira_fee_modal") {
-        setShowNairaModal(true);
+      if (action?.type === "concierge_fee_modal") {
+        setShowFeeModal(true);
       }
-    }, 750);
+    }, 600);
   };
 
   /* ─────────────────────────────────────────────
-     500 Naira Payment Handler
+     $500 USD Payment Handler
      Simulates payment -> shows confirmation -> redirects to WhatsApp
   ───────────────────────────────────────────── */
-  const handlePayNaira = () => {
+  const handlePayFee = () => {
     setIsProcessingPayment(true);
 
     setTimeout(() => {
@@ -422,17 +412,17 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
         {
           id: `bot-paid-${Date.now()}`,
           sender: "bot",
-          text: "✅ Payment of ₦500 confirmed!\n\nYour transaction has been verified. Redirecting you to your dedicated flight concierge agent on WhatsApp now...",
+          text: "✅ Payment of $500 USD confirmed!\n\nYour transaction has been verified and 100% credited toward your charter. Connecting you to your dedicated flight concierge officer on WhatsApp now...",
         },
       ]);
 
-      // Automatically redirect to WhatsApp after 1.4s
+      // Automatically redirect to WhatsApp after 1.2s
       setTimeout(() => {
         openWhatsApp();
-        setShowNairaModal(false);
+        setShowFeeModal(false);
         setPaymentSuccess(false);
-      }, 1400);
-    }, 1500);
+      }, 1200);
+    }, 1400);
   };
 
   return (
@@ -443,39 +433,53 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
           <div className="relative">
             <span className="absolute -inset-1.5 rounded-full bg-[#C9A052]/40 animate-ping opacity-75 pointer-events-none" />
             <span className="absolute -inset-1 rounded-full bg-[#C9A052]/20 animate-pulse pointer-events-none" />
+
             <button
               onClick={() => setIsOpen(true)}
               aria-label="Open concierge chat"
-              className="relative w-14 h-14 rounded-full bg-[#0F1420] text-white flex items-center justify-center shadow-2xl hover:scale-105 transition-all duration-300 border border-[#C9A052]/50 group"
+              className="relative w-14 h-14 rounded-full bg-[#0F1420] text-white flex items-center justify-center shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-[#C9A052] group"
             >
-              <MessageCircle className="w-6 h-6 text-[#C9A052] transition-transform group-hover:scale-110" />
+              <MessageCircle className="w-6 h-6 text-[#C9A052] group-hover:scale-110 transition-transform" />
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-[#0F1420]" />
             </button>
           </div>
-          <span className="mt-1.5 text-[10px] uppercase font-bold tracking-widest text-[#0F1420] bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm border border-gray-100 font-body">
+          <span className="mt-1 text-[10px] font-semibold tracking-wider text-[#0F1420] bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full border border-gray-200 shadow-sm uppercase font-body">
             Concierge
           </span>
         </div>
       )}
 
-      {/* ── Chat window (open state) ── */}
+      {/* ── Chat Window ── */}
       {isOpen && (
-        <div className="fixed bottom-6 right-6 z-50 w-[400px] max-w-[calc(100vw-1.5rem)] h-[620px] max-h-[calc(100vh-5rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
+        <div
+          role="dialog"
+          aria-label="Concierge Chat"
+          className="fixed bottom-6 right-6 z-50 w-[92vw] sm:w-[420px] h-[600px] max-h-[85vh] bg-white rounded-3xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200"
+        >
           {/* Header */}
-          <div className="bg-[#0F1420] text-white p-4 rounded-t-2xl flex items-center justify-between shrink-0 border-b border-[#C9A052]/20">
+          <div className="bg-[#0F1420] text-white p-4 flex items-center justify-between border-b border-white/10 shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#C9A052]/20 flex items-center justify-center text-[#C9A052] shrink-0 border border-[#C9A052]/40">
-                <Plane className="w-4 h-4 -rotate-45" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-full bg-[#C9A052]/20 border border-[#C9A052]/40 flex items-center justify-center">
+                  <Plane className="w-5 h-5 text-[#C9A052]" />
+                </div>
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#0F1420]" />
               </div>
               <div>
-                <h3 className="font-display text-sm font-bold text-white tracking-wide">
-                  Orbelo Concierge
-                </h3>
-                <div className="flex items-center gap-1.5 text-[11px] text-[#C9A052] font-body">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Available 24 / 7 · Flight Ops</span>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="font-display text-sm font-bold tracking-wide">
+                    Orbelo Concierge
+                  </h3>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[#C9A052]/20 text-[#C9A052]">
+                    24/7
+                  </span>
                 </div>
+                <p className="text-[11px] text-gray-400 font-body">
+                  Private Aviation Advisor &amp; FBO Desk
+                </p>
               </div>
             </div>
+
             <button
               onClick={() => setIsOpen(false)}
               aria-label="Close chat"
@@ -495,15 +499,15 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
                   </p>
                 </div>
 
-                {/* Inline Action for ₦500 Fee */}
-                {msg.action?.type === "naira_fee_modal" && (
+                {/* Inline Action for $500 Concierge Fee */}
+                {msg.action?.type === "concierge_fee_modal" && (
                   <div className="pt-1 pl-1">
                     <button
-                      onClick={() => setShowNairaModal(true)}
+                      onClick={() => setShowFeeModal(true)}
                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold bg-[#0F1420] hover:bg-gray-800 text-white shadow-md transition-all active:scale-95"
                     >
                       <CreditCard className="w-4 h-4 text-[#C9A052]" />
-                      <span>Pay ₦500 &amp; Connect to our Agents</span>
+                      <span>Complete $500 Concierge Fee &amp; Connect</span>
                     </button>
                   </div>
                 )}
@@ -521,9 +525,9 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
             <div ref={messagesEndRef} />
 
             {/* ─────────────────────────────────────────────
-               500 NAIRA POP-UP MODAL OVER CHAT
+               $500 USD CONCIERGE FEE MODAL OVER CHAT
             ───────────────────────────────────────────── */}
-            {showNairaModal && (
+            {showFeeModal && (
               <div className="absolute inset-x-3 bottom-3 top-auto z-20 animate-in fade-in slide-in-from-bottom-5 duration-200">
                 <div className="bg-[#0F1420] text-white rounded-2xl p-5 shadow-2xl border-2 border-[#C9A052]/50 space-y-4">
                   {/* Modal Header */}
@@ -537,12 +541,12 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
                           Flight Officer Assignment
                         </h4>
                         <span className="text-[10px] text-[#C9A052] font-semibold tracking-wider uppercase">
-                          Standard Connection Fee
+                          Standard Concierge Fee
                         </span>
                       </div>
                     </div>
                     <button
-                      onClick={() => setShowNairaModal(false)}
+                      onClick={() => setShowFeeModal(false)}
                       className="text-gray-400 hover:text-white p-1 rounded-lg"
                       aria-label="Dismiss fee modal"
                     >
@@ -557,46 +561,46 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
                         Concierge Connection Fee
                       </span>
                       <span className="text-[11px] text-gray-400">
-                        100% credited towards your flight
+                        100% credited towards your charter flight
                       </span>
                     </div>
                     <div className="text-right">
                       <span className="font-display text-2xl font-bold text-[#C9A052]">
-                        ₦500
+                        $500
                       </span>
                       <span className="text-[10px] text-gray-400 block font-mono">
-                        NGN
+                        USD
                       </span>
                     </div>
                   </div>
 
                   {/* Description */}
                   <p className="text-xs text-gray-300 leading-relaxed font-body">
-                    A connection fee of <strong>₦500</strong> assigns an available flight officer to your quote for immediate tail confirmation and tailored itinerary handling.
+                    A connection fee of <strong>$500 USD</strong> assigns an executive flight officer to your quote for immediate tail confirmation, landing slots, and WhatsApp dispatch.
                   </p>
 
                   {/* Payment Button & States */}
                   {paymentSuccess ? (
                     <div className="bg-emerald-500/20 border border-emerald-500/50 rounded-xl p-3 text-center text-xs font-semibold text-emerald-300 flex items-center justify-center gap-2">
                       <CheckCircle className="w-4 h-4 text-emerald-400" />
-                      <span>Payment Confirmed! Redirecting to WhatsApp...</span>
+                      <span>$500 Fee Verified! Redirecting to WhatsApp...</span>
                     </div>
                   ) : (
                     <button
                       type="button"
                       disabled={isProcessingPayment}
-                      onClick={handlePayNaira}
+                      onClick={handlePayFee}
                       className="w-full py-3.5 px-4 rounded-xl font-body font-semibold text-xs bg-[#C9A052] hover:bg-[#b8912e] text-[#0F1420] flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.98] disabled:opacity-75 cursor-pointer"
                     >
                       {isProcessingPayment ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Verifying ₦500 Payment...</span>
+                          <span>Processing $500 Payment...</span>
                         </>
                       ) : (
                         <>
                           <CreditCard className="w-4 h-4" />
-                          <span>Pay ₦500 &amp; connect to one of our agents</span>
+                          <span>Pay $500 USD &amp; Connect to Flight Officer</span>
                           <ArrowUpRight className="w-3.5 h-3.5" />
                         </>
                       )}
@@ -605,27 +609,39 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
 
                   <div className="flex items-center justify-center gap-1.5 text-[10px] text-gray-400">
                     <Lock className="w-3 h-3 text-[#C9A052]" />
-                    <span>Instant debit card / bank transfer verification</span>
+                    <span>Instant debit card / wire authorization · 100% flight credit</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Quick Replies */}
-          {messages.length <= 2 && !isTyping && !showNairaModal && (
-            <div className="px-3 py-2 bg-white border-t border-gray-100 flex gap-2 overflow-x-auto shrink-0 scrollbar-hide">
-              {QUICK_REPLIES.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleSend(null, q)}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-medium border border-[#C9A052]/50 text-[#0F1420] hover:bg-[#C9A052]/10 transition-colors whitespace-nowrap font-body"
-                >
-                  {q}
-                </button>
-              ))}
+          {/* ─────────────────────────────────────────────
+             CHATBOT CATEGORIES DROPDOWN SELECTOR
+             (Client requested: "Make the chat bot Categories to drop down")
+          ───────────────────────────────────────────── */}
+          <div className="px-3 py-2 bg-[#F5F2EC] border-t border-gray-200 shrink-0">
+            <div className="relative">
+              <select
+                aria-label="Inquiry Category Dropdown"
+                defaultValue=""
+                onChange={(e) => {
+                  if (e.target.value) {
+                    handleSend(null, e.target.value);
+                    e.target.value = ""; // reset dropdown
+                  }
+                }}
+                className="w-full appearance-none bg-white border border-[#E8E5DF] rounded-xl px-3.5 py-2 pr-8 text-xs font-medium text-[#0F1420] hover:border-[#C9A052] focus:outline-none focus:ring-1 focus:ring-[#C9A052] transition-colors cursor-pointer"
+              >
+                {CHAT_CATEGORIES.map((cat, idx) => (
+                  <option key={idx} value={cat.value} disabled={idx === 0}>
+                    {cat.label}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-[#C9A052] absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
-          )}
+          </div>
 
           {/* Input Form */}
           <form
@@ -637,14 +653,14 @@ I have successfully completed the ₦500 concierge fee. Please connect me with a
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
-              placeholder="Ask about aircraft, routes, pricing…"
+              placeholder="Ask about jet categories, pricing in $, FBOs…"
               className="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-2.5 text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#C9A052] font-body"
             />
             <button
               type="submit"
               disabled={!inputText.trim()}
               aria-label="Send message"
-              className="w-9 h-9 rounded-xl bg-[#C9A052] hover:bg-[#b8912e] disabled:opacity-40 disabled:hover:bg-[#C9A052] text-[#0F1420] flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-sm"
+              className="w-9 h-9 rounded-xl bg-[#C9A052] hover:bg-[#b8912e] disabled:opacity-40 disabled:hover:bg-[#C9A052] text-[#0F1420] flex items-center justify-center shrink-0 transition-all active:scale-95 shadow-sm cursor-pointer"
             >
               <Send className="w-4 h-4" />
             </button>

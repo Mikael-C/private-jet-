@@ -159,16 +159,19 @@ export default function DestinationsPage() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-center gap-4 shrink-0">
-            <a
-              href={customItineraryWhatsapp}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary flex items-center gap-2 text-sm px-8 py-4 font-semibold"
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.dispatchEvent(new Event("open-concierge-chat"));
+                }
+              }}
+              className="btn-primary flex items-center gap-2 text-sm px-8 py-4 font-semibold cursor-pointer"
             >
-              <MessageCircle className="w-4 h-4 text-emerald-800" />
+              <MessageCircle className="w-4 h-4 text-[#0F1420]" />
               <span>Send us your itinerary</span>
               <ArrowUpRight className="w-4 h-4" />
-            </a>
+            </button>
             <Link
               href="/booking"
               className="btn-outline flex items-center gap-2 text-sm px-8 py-4"
